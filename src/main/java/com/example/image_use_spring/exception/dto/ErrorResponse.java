@@ -1,6 +1,6 @@
-package com.example.image_use_awss3.exception.dto;
+package com.example.image_use_spring.exception.dto;
 
-import com.example.image_use_awss3.exception.type.ErrorCode;
+import com.example.image_use_spring.exception.type.ErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

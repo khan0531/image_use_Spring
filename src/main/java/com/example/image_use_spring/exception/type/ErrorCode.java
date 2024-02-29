@@ -1,4 +1,4 @@
-package com.example.image_use_awss3.exception.type;
+package com.example.image_use_spring.exception.type;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

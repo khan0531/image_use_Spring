@@ -1,10 +1,25 @@
-package com.example.image_use_awss3.image.persist.entity;
+package com.example.image_use_spring.image.persist.entity;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ImageEntity {
 
   @Id
@@ -14,5 +29,10 @@ public class ImageEntity {
   private String imagePath;
 
   private String imageFileName;
+
+  // 압축된 이미지와 썸네일이 원본 이미지를 참조하는 필드
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "originalImageId")
+  private ImageEntity originalImage;
 
 }

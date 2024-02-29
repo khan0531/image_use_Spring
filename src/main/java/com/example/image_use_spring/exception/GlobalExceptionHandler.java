@@ -1,8 +1,9 @@
-package com.example.image_use_awss3.exception;
+package com.example.image_use_spring.exception;
 
-import static com.example.image_use_awss3.exception.type.ErrorCode.INTERNAL_SERVER_ERROR;
 
-import com.example.image_use_awss3.exception.dto.ErrorResponse;
+import static com.example.image_use_spring.exception.type.ErrorCode.INTERNAL_SERVER_ERROR;
+
+import com.example.image_use_spring.exception.dto.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;

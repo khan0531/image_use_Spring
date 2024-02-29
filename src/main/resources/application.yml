@@ -18,26 +18,11 @@ spring:
         format_sql: true
         show_sql: true
     mysql:
-      url: jdbc:mysql://localhost:3306/image_test
-      username: root
-      password: 7845120qwe
+      url: jdbc:mysql://localhost:3306/${MYSQL_DATABASE:image_test}
+      username: ${MYSQL_USERNAME:root}
+      password: ${MYSQL_PASSWORD:7845120qwe}
       driver-class-name: com.mysql.cj.jdbc.Driver
 
   mvc:
     path match:
       matching-strategy: ant_path_matcher
-
-# AWS ?? ??
-cloud:
-  aws:
-    credentials:
-      accessKey: ${AWS_ACCESS_KEY_ID:your-access-key} # ?? ??? ?? ??
-      secretKey: ${AWS_SECRET_ACCESS_KEY:your-secret-key} # ?? ??? ?? ??
-    region:
-      static: ${AWS_REGION:your-region} # ?: us-east-1
-
-# S3 ?? ?? ??
-app:
-  aws:
-    s3:
-      bucketName: ${S3_BUCKET_NAME:your-bucket-name}
