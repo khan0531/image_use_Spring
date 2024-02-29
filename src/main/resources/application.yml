@@ -18,9 +18,9 @@ spring:
         format_sql: true
         show_sql: true
     mysql:
-      url: jdbc:mysql://localhost:3306/${MYSQL_DATABASE:image_test}
-      username: ${MYSQL_USERNAME:root}
-      password: ${MYSQL_PASSWORD:7845120qwe}
+      url: jdbc:mysql://localhost:3306/${MYSQL_DATABASE}
+      username: ${MYSQL_USERNAME}
+      password: ${MYSQL_PASSWORD}
       driver-class-name: com.mysql.cj.jdbc.Driver
 
   mvc:
