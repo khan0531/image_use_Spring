@@ -13,6 +13,7 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
+import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -25,68 +26,97 @@ public class ImageUtil {
 
   public byte[] compressImage(byte[] imageData) throws IOException {
     ByteArrayInputStream bais = new ByteArrayInputStream(imageData);
-    BufferedImage image = ImageIO.read(bais);
+    BufferedImage originalImage = ImageIO.read(bais); // 원본 이미지 읽기
+    int originalWidth = originalImage.getWidth(); // 원본 너비
+    int originalHeight = originalImage.getHeight(); // 원본 높이
 
-    // RGB 컬러 모델로 이미지 변환
-    BufferedImage newImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
-    Graphics2D g = newImage.createGraphics();
-    g.drawImage(image, 0, 0, null);
-    g.dispose();
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    Thumbnails.of(originalImage)
+        .size(originalWidth, originalHeight) // 원본 이미지의 크기로 설정
+        .outputQuality(0.75) // 출력 품질 설정 (0.0 ~ 1.0)
+        .outputFormat("jpg") // 출력 형식 지정
+        .toOutputStream(baos);
 
-    // JPEG 이미지 압축 품질 설정
-    float quality = 0.75f;
-    ImageWriter jpgWriter = ImageIO.getImageWritersByFormatName("jpg").next();
-    ImageWriteParam jpgWriteParam = jpgWriter.getDefaultWriteParam();
-    jpgWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-    jpgWriteParam.setCompressionQuality(quality);
-
-    ByteArrayOutputStream compressed = new ByteArrayOutputStream();
-    ImageOutputStream ios = ImageIO.createImageOutputStream(compressed);
-    jpgWriter.setOutput(ios);
-    jpgWriter.write(null, new IIOImage(newImage, null, null), jpgWriteParam);
-
-    jpgWriter.dispose();
-    ios.close();
-    bais.close();
-    compressed.close();
-
-    return compressed.toByteArray();
+    bais.close(); // ByteArrayInputStream을 명시적으로 닫기
+    return baos.toByteArray();
   }
-
 
   public byte[] createThumbnail(byte[] imageData, int width, int height) throws IOException {
     ByteArrayInputStream bais = new ByteArrayInputStream(imageData);
-    BufferedImage image = ImageIO.read(bais);
-
-    // 원본 이미지 비율 계산
-    double ratio = (double) image.getWidth() / image.getHeight();
-    int thumbnailWidth = width;
-    int thumbnailHeight = height;
-
-    // 너비 또는 높이 중에서 큰 쪽에 맞추어 비율 조정
-    if (width / height > ratio) {
-      thumbnailWidth = (int) (height * ratio);
-    } else {
-      thumbnailHeight = (int) (width / ratio);
-    }
-
-    BufferedImage thumbnailImage = new BufferedImage(thumbnailWidth, thumbnailHeight, BufferedImage.TYPE_INT_RGB);
-    Graphics2D graphics2D = thumbnailImage.createGraphics();
-
-    graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-
-    // 이미지 크기 조정
-    graphics2D.drawImage(image, 0, 0, thumbnailWidth, thumbnailHeight, null);
-    graphics2D.dispose();
-
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    ImageIO.write(thumbnailImage, "jpg", baos);
-    byte[] thumbnailData = baos.toByteArray();
 
-    bais.close();
-    baos.close();
+    Thumbnails.of(bais)
+        .size(width, height) // 썸네일의 크기 지정
+        .outputFormat("jpg") // 출력 형식 지정
+        .toOutputStream(baos);
 
-    return thumbnailData;
+    return baos.toByteArray();
   }
+
+//  public byte[] compressImage(byte[] imageData) throws IOException {
+//    ByteArrayInputStream bais = new ByteArrayInputStream(imageData);
+//    BufferedImage image = ImageIO.read(bais);
+//
+//    // RGB 컬러 모델로 이미지 변환
+//    BufferedImage newImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+//    Graphics2D g = newImage.createGraphics();
+//    g.drawImage(image, 0, 0, null);
+//    g.dispose();
+//
+//    // JPEG 이미지 압축 품질 설정
+//    float quality = 0.75f;
+//    ImageWriter jpgWriter = ImageIO.getImageWritersByFormatName("jpg").next();
+//    ImageWriteParam jpgWriteParam = jpgWriter.getDefaultWriteParam();
+//    jpgWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+//    jpgWriteParam.setCompressionQuality(quality);
+//
+//    ByteArrayOutputStream compressed = new ByteArrayOutputStream();
+//    ImageOutputStream ios = ImageIO.createImageOutputStream(compressed);
+//    jpgWriter.setOutput(ios);
+//    jpgWriter.write(null, new IIOImage(newImage, null, null), jpgWriteParam);
+//
+//    jpgWriter.dispose();
+//    ios.close();
+//    bais.close();
+//    compressed.close();
+//
+//    return compressed.toByteArray();
+//  }
+//
+//
+//  public byte[] createThumbnail(byte[] imageData, int width, int height) throws IOException {
+//    ByteArrayInputStream bais = new ByteArrayInputStream(imageData);
+//    BufferedImage image = ImageIO.read(bais);
+//
+//    // 원본 이미지 비율 계산
+//    double ratio = (double) image.getWidth() / image.getHeight();
+//    int thumbnailWidth = width;
+//    int thumbnailHeight = height;
+//
+//    // 너비 또는 높이 중에서 큰 쪽에 맞추어 비율 조정
+//    if (width / height > ratio) {
+//      thumbnailWidth = (int) (height * ratio);
+//    } else {
+//      thumbnailHeight = (int) (width / ratio);
+//    }
+//
+//    BufferedImage thumbnailImage = new BufferedImage(thumbnailWidth, thumbnailHeight, BufferedImage.TYPE_INT_RGB);
+//    Graphics2D graphics2D = thumbnailImage.createGraphics();
+//
+//    graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+//
+//    // 이미지 크기 조정
+//    graphics2D.drawImage(image, 0, 0, thumbnailWidth, thumbnailHeight, null);
+//    graphics2D.dispose();
+//
+//    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//    ImageIO.write(thumbnailImage, "jpg", baos);
+//    byte[] thumbnailData = baos.toByteArray();
+//
+//    bais.close();
+//    baos.close();
+//
+//    return thumbnailData;
+//  }
 
 }
