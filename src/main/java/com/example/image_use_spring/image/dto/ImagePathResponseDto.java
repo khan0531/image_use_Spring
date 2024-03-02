@@ -11,7 +11,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ImageResponseDto {
-  private String message;
-  private String callbackUrl;
+public class ImagePathResponseDto {
+  private String originalPath;
+  private String compressedPath;
+  private String thumbnailPath;
 }

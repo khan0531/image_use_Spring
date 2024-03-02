@@ -11,7 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class ImageUseSpringApplication implements CommandLineRunner {
   private final String homeDirectory = System.getProperty("user.home");
-  private final Path imagesDirectory = Paths.get(homeDirectory, "images");
+  private final Path imagesDirectory = Paths.get(homeDirectory, "test-images");
 
   public static void main(String[] args) {
     SpringApplication.run(ImageUseSpringApplication.class, args);

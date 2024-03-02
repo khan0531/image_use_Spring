@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 public interface ImageRepository extends JpaRepository<ImageEntity, Long> {
 
   Optional<ImageEntity> findByImageFileName(String imageFileName);
+
+  Optional<ImageEntity> findByUuid(String uuid);
 }
