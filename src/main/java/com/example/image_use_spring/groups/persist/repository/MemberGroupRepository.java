@@ -18,7 +18,7 @@ public interface MemberGroupRepository extends JpaRepository<MemberGroupEntity, 
   Optional<MemberGroupEntity> findByMemberAndChatGroup(MemberEntity memberEntity,
       ChatGroupEntity chatGroupEntity);
 
-  List<MemberGroupEntity> findByMember(MemberEntity entity);
+  List<MemberGroupEntity> findByMember(MemberEntity memberEntity);
 
   Long countByChatGroup(ChatGroupEntity entity);
 }
