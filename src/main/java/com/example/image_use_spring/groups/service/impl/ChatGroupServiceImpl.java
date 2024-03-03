@@ -1,5 +1,6 @@
 package com.example.image_use_spring.groups.service.impl;
 
+import static com.example.image_use_spring.exception.type.ErrorCode.GROUP_NOT_ADMIN;
 import static com.example.image_use_spring.exception.type.ErrorCode.GROUP_NOT_FOUND;
 import static com.example.image_use_spring.exception.type.ErrorCode.GROUP_NOT_MEMBER;
 
@@ -100,6 +101,20 @@ public class ChatGroupServiceImpl implements ChatGroupService {
     memberGroupRepository.save(memberGroup.toEntity());
 
     return ChatGroupDto.Response.fromEntity(chatGroup.toEntity());
+  }
+
+  @Override
+  public ChatGroupDto.Response updateChatGroup(Long groupId, ChatGroupDto.Request request,
+      Member member) {
+    ChatGroup challengeGroup = chatGroupRepository.findById(groupId)
+        .map(ChatGroup::fromEntity)
+        .orElseThrow(() -> new GroupException(GROUP_NOT_FOUND));
+
+    if (!challengeGroup.isAdmin(member)) {
+      throw new GroupException(GROUP_NOT_ADMIN);
+    }
+    return ChatGroupDto.Response.fromEntity(
+        chatGroupRepository.save(challengeGroup.update(request).toEntity()));
   }
 
   private static String generateRandomString(int length) {

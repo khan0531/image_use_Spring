@@ -9,6 +9,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -37,5 +38,11 @@ public class GroupController {
   @PostMapping("/join/{inviteLink}")
   public ResponseEntity<?> joinGroup(@PathVariable String inviteLink, @AuthenticationPrincipal Member member) {
     return ResponseEntity.ok(chatGroupService.joinChatGroup(inviteLink, member));
+  }
+
+  @PutMapping("/{groupId}")
+  public ResponseEntity<?> updateGroup(@PathVariable Long groupId,
+      @RequestBody ChatGroupDto.Request request, @AuthenticationPrincipal Member member) {
+    return ResponseEntity.ok(chatGroupService.updateChatGroup(groupId, request, member));
   }
 }

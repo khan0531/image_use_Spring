@@ -16,4 +16,6 @@ public interface ChatGroupService {
   InviteLinkResponseDto createInviteLink(Long groupId, Member member);
 
   ChatGroupDto.Response joinChatGroup(String inviteLink, Member member);
+
+  Response updateChatGroup(Long groupId, Request request, Member member);
 }

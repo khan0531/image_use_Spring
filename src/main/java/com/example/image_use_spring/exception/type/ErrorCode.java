@@ -39,7 +39,7 @@ public enum ErrorCode {
   GROUP_NOT_EXIST("존재하지 않는 Group입니다."),
   ALREADY_GROUP_MEMBER("이미 Group에 속해있습니다."),
   GROUP_NOT_MEMBER("해당하는 Member가 Group에 속해있지 않습니다."),
-  GROUP_NOT_OWNER("해당하는 Member가 Group의 admin이 아닙니다. 수정 권한이 없습니다."),
+  GROUP_NOT_ADMIN("해당하는 Member가 Group의 admin이 아닙니다. 수정 권한이 없습니다."),
   GROUP_NOT_MEMBER_VERIFICATION("해당하는 Member가 Group의 Member가 아닙니다.");
 
 
