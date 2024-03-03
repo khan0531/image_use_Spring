@@ -17,6 +17,7 @@ public enum ErrorCode {
   MEMBER_VERIFICATION_NOT_REQUEST("Member 인증이 요청되지 않았습니다."),
   MEMBER_VERIFICATION_ALREADY_ACTIVE("이미 Member 인증이 되어있습니다."),
   MEMBER_VERIFICATION_NOT_ACTIVE("Member 인증이 되지 않았습니다."),
+  MEMBER_VERIFICATION_CODE_NOT_VALID("유효하지 않은 Member 인증 코드입니다."),
   MEMBER_NOT_EXIST("존재하지 않는 Member입니다."),
 
   /**

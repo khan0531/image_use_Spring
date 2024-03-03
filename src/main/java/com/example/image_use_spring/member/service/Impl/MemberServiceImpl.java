@@ -96,25 +96,10 @@ public class MemberServiceImpl implements MemberService {
     }
 
     Member member = Member.fromSignUpDto(memberSignUpRequest);
-    member.passwordEncode(this.passwordEncoder);
-    MemberEntity memberEntity = this.memberRepository.save(member.toEntity());
+    member.passwordEncode(passwordEncoder);
+    MemberEntity memberEntity = memberRepository.save(member.toEntity());
 
     return EmailSignUpDto.Response.fromEntity(memberEntity);
-  }
-
-  public boolean verifyEmail(EmailCodeVerifyRequestDto requestDto) {
-    VerificationCode verificationCode = verificationCodeRepository.findById(requestDto.getEmail())
-        .orElseThrow(() -> new IllegalArgumentException("인증 코드가 존재하지 않습니다."));
-
-    if (verificationCode != null && verificationCode.getCode().equals(requestDto.getCode())) {
-      verificationCode.setVerified(true);
-      verificationCode.setTtl(TimeUnit.MINUTES.toSeconds(20));
-      verificationCodeRepository.save(verificationCode); // 인증 상태 업데이트
-
-      return true;
-    }
-
-    return false;
   }
 
   public void signInWithEmail(EmailSignInRequestDto emailSignInRequestDto) {
@@ -129,13 +114,22 @@ public class MemberServiceImpl implements MemberService {
     String accessToken = tokenProvider.generateAccessToken(member);
     String refreshToken = tokenProvider.generateRefreshToken();
 
-//    memberRepository.findByEmail(member.getEmail())
-//            .ifPresent(memberEntity -> {
-//              memberEntity.setRefreshToken(refreshToken);
-//              memberRepository.save(memberEntity);
-//            });
-
     tokenProvider.sendAccessAndRefreshToken(response, accessToken, refreshToken);
+  }
+
+  public boolean verifyEmail(EmailCodeVerifyRequestDto requestDto) {
+    VerificationCode verificationCode = verificationCodeRepository.findById(requestDto.getEmail())
+        .orElseThrow(() -> new MemberException(MEMBER_VERIFICATION_NOT_REQUEST));
+
+    if (verificationCode != null && verificationCode.getCode().equals(requestDto.getCode())) {
+      verificationCode.setVerified(true);
+      verificationCode.setTtl(TimeUnit.MINUTES.toSeconds(20));
+      verificationCodeRepository.save(verificationCode); // 인증 상태 업데이트
+
+      return true;
+    }
+
+    return false;
   }
 
   public String sendEmailVerificationCode(String email) {
@@ -143,28 +137,16 @@ public class MemberServiceImpl implements MemberService {
 
     simpleEmailService.sendEmail(email, "가게그만가계 가입 인증 코드입니다.", code);
 
-    VerificationCode verificationCode = new VerificationCode();
-    verificationCode.setEmail(email);
-    verificationCode.setCode(code);
-    verificationCode.setVerified(false);
+    VerificationCode verificationCode =
+        new VerificationCode()
+        .builder()
+        .email(email)
+        .code(code)
+        .isVerified(false)
+        .build();
     verificationCodeRepository.save(verificationCode);
 
     return "이메일 인증 메일을 전송했습니다.";
   }
 
-//  private MemberEntity validateAndGetMember(Long memberId, Member member) {
-//    if (!Objects.equals(memberId, member.getId())) {
-//      throw new MemberException(MEMBER_NOT_MATCH);
-//    }
-//
-//    return memberRepository.findById(memberId).orElseThrow(
-//        () -> new MemberException(MEMBER_NOT_FOUND)
-//    );
-//  }
-//
-//  private MemberEntity validateAndGetMember(Member member) {
-//    return memberRepository.findById(member.getId()).orElseThrow(
-//        () -> new MemberException(MEMBER_NOT_FOUND)
-//    );
-//  }
 }
