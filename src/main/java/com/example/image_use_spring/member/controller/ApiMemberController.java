@@ -3,9 +3,11 @@ package com.example.image_use_spring.member.controller;
 import static com.example.image_use_spring.exception.type.ErrorCode.MEMBER_VERIFICATION_CODE_NOT_VALID;
 
 import com.example.image_use_spring.exception.MemberException;
+import com.example.image_use_spring.member.dto.EmailCodeRequestDto;
 import com.example.image_use_spring.member.dto.EmailCodeVerifyRequestDto;
 import com.example.image_use_spring.member.dto.EmailSignInRequestDto;
 import com.example.image_use_spring.member.dto.EmailSignUpDto;
+import com.example.image_use_spring.member.dto.ResetPasswordLinkRequestDto;
 import com.example.image_use_spring.member.service.Impl.MemberServiceImpl;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,19 +28,16 @@ public class ApiMemberController {
 
   private final MemberServiceImpl memberService;
 
-
-  public ResponseEntity<?> verifyEmail(@RequestBody EmailCodeVerifyRequestDto requestDto) {
-    MemberException memberException = new MemberException(MEMBER_VERIFICATION_CODE_NOT_VALID);
-    try {
-      boolean isVerified = memberService.verifyEmail(requestDto);
-
-      if (isVerified) {
-        return ResponseEntity.ok().body("이메일 인증에 성공했습니다.");
-      } else {
-        return ResponseEntity.badRequest().body("올바른 코드가 아닙니다.");
-      }
-    } catch (MemberException e) {
-      return ResponseEntity.badRequest().body(e.getErrorMessage());
-    }
+  @PostMapping("/member/sign-up/email-verifications")
+  public ResponseEntity<?> sendEmailVerificationCode(@RequestBody EmailCodeRequestDto request) {
+    memberService.sendEmailVerificationCode(request.getEmail());
+    return ResponseEntity.ok().body("인증 코드가 이메일로 전송되었습니다.");
   }
+
+  @PostMapping("/member/reset-password")
+  public ResponseEntity<?> sendResetPasswordLink(@RequestBody ResetPasswordLinkRequestDto requestDto) {
+    boolean response = memberService.sendResetPasswordLink(requestDto.getEmail());
+    return ResponseEntity.ok(response);
+  }
+
 }

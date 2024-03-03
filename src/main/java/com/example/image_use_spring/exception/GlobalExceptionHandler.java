@@ -30,6 +30,15 @@ public class GlobalExceptionHandler {
         .build();
   }
 
+  @ExceptionHandler(GroupException.class)
+  public ErrorResponse handleGroupException(GroupException e) {
+    log.error("handleGroupException", e);
+    return ErrorResponse.builder()
+        .errorCode(e.getErrorCode())
+        .errorMessage(e.getErrorMessage())
+        .build();
+  }
+
   @ExceptionHandler(Exception.class)
   public ErrorResponse handleException(Exception e) {
     log.error("Exception", e);

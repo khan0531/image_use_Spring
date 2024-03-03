@@ -3,6 +3,7 @@ package com.example.image_use_spring.member.service;
 import com.example.image_use_spring.member.dto.EmailCodeVerifyRequestDto;
 import com.example.image_use_spring.member.dto.EmailSignInRequestDto;
 import com.example.image_use_spring.member.dto.EmailSignUpDto;
+import com.example.image_use_spring.member.dto.ResetPasswordLinkRequestDto;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 public interface MemberService extends UserDetailsService {
@@ -14,4 +15,8 @@ public interface MemberService extends UserDetailsService {
 
 
   String sendEmailVerificationCode(String email);
+
+  boolean sendResetPasswordLink(String email);
+
+  boolean resetPassword(Long memberId, String token, String password);
 }

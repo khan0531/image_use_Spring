@@ -26,7 +26,22 @@ public enum ErrorCode {
   NOT_FOUND_TASK("해당하는 Task를 찾을 수 없습니다."),
   NOT_VALID_FILE_TYPE("지원하지 않는 파일 형식입니다."),
   FILE_NOT_FOUND("파일을 찾을 수 없습니다."),
-  INTERNAL_SERVER_ERROR("서버 오류가 발생 했습니다.");
+  INTERNAL_SERVER_ERROR("서버 오류가 발생 했습니다."),
+
+  /**
+   * Group
+   */
+  GROUP_NOT_FOUND("해당하는 Group을 찾을 수 없습니다."),
+  GROUP_ALREADY_EXIST("이미 존재하는 Group입니다."),
+  GROUP_NOT_VALID("유효하지 않은 Group입니다."),
+  GROUP_NOT_MATCH("Group 정보가 일치하지 않습니다."),
+  GROUP_NOT_AUTHORIZED("Group 권한이 없습니다."),
+  GROUP_NOT_EXIST("존재하지 않는 Group입니다."),
+  ALREADY_GROUP_MEMBER("이미 Group에 속해있습니다."),
+  GROUP_NOT_MEMBER("해당하는 Member가 Group에 속해있지 않습니다."),
+  GROUP_NOT_OWNER("해당하는 Member가 Group의 admin이 아닙니다. 수정 권한이 없습니다."),
+  GROUP_NOT_MEMBER_VERIFICATION("해당하는 Member가 Group의 Member가 아닙니다.");
+
 
   private final String description;
 }
