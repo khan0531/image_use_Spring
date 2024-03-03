@@ -3,6 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <title>이메일 회원 가입</title>
+  <script>
+    function sendEmailVerificationCode() {
+      const email = document.querySelector('input[name="email"]').value;
+      fetch('/member/sign-up/email-verifications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email: email })
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        alert(data); // 성공 메시지를 표시, 서버 응답에 따라 메시지를 조정할 수 있습니다.
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        alert('Error sending verification code.');
+      });
+    }
+  </script>
 </head>
 <body>
   <h1> 이메일 회원 가입 </h1>
@@ -13,6 +38,7 @@
   <form method="post">
     <div>
       <input type="email" name="email" placeholder="아이디(이메일) 입력" required/>
+      <button type="button" onclick="sendEmailVerificationCode()">인증 코드 보내기</button>
     </div>
     <div>
       <input type="text" name="name" placeholder="이름 입력"required/>
