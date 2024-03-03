@@ -119,7 +119,7 @@ public class MemberServiceImpl implements MemberService {
 
   public void signInWithEmail(EmailSignInRequestDto emailSignInRequestDto) {
     Member member = (Member) loadUserByUsername(emailSignInRequestDto.getEmail());
-    if (!this.passwordEncoder.matches(emailSignInRequestDto.getPassword(), member.getPassword())) {
+    if (!passwordEncoder.matches(emailSignInRequestDto.getPassword(), member.getPassword())) {
       throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
     }
 
@@ -129,13 +129,27 @@ public class MemberServiceImpl implements MemberService {
     String accessToken = tokenProvider.generateAccessToken(member);
     String refreshToken = tokenProvider.generateRefreshToken();
 
-    memberRepository.findByEmail(member.getEmail())
-            .ifPresent(memberEntity -> {
-              memberEntity.setRefreshToken(refreshToken);
-              memberRepository.save(memberEntity);
-            });
+//    memberRepository.findByEmail(member.getEmail())
+//            .ifPresent(memberEntity -> {
+//              memberEntity.setRefreshToken(refreshToken);
+//              memberRepository.save(memberEntity);
+//            });
 
     tokenProvider.sendAccessAndRefreshToken(response, accessToken, refreshToken);
+  }
+
+  public String sendEmailVerificationCode(String email) {
+    String code = memberUtil.verificationCodeGenerator();
+
+    simpleEmailService.sendEmail(email, "가게그만가계 가입 인증 코드입니다.", code);
+
+    VerificationCode verificationCode = new VerificationCode();
+    verificationCode.setEmail(email);
+    verificationCode.setCode(code);
+    verificationCode.setVerified(false);
+    verificationCodeRepository.save(verificationCode);
+
+    return "이메일 인증 메일을 전송했습니다.";
   }
 
 //  private MemberEntity validateAndGetMember(Long memberId, Member member) {

@@ -72,15 +72,15 @@ public class Member implements UserDetails {
   }
 
   public void authorizeUser() {
-    this.role = Authority.USER;
+    role = Authority.USER;
   }
 
   public void passwordEncode(PasswordEncoder passwordEncoder) {
-    this.password = passwordEncoder.encode(this.password);
+    password = passwordEncoder.encode(password);
   }
 
   public void updateRefreshToken(String updateRefreshToken) {
-    this.refreshToken = updateRefreshToken;
+    refreshToken = updateRefreshToken;
   }
 
   public MemberEntity toEntity() {

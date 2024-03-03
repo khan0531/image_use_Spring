@@ -13,4 +13,5 @@ public interface MemberService extends UserDetailsService {
   void signInWithEmail(EmailSignInRequestDto emailSignInRequestDto);
 
 
+  String sendEmailVerificationCode(String email);
 }

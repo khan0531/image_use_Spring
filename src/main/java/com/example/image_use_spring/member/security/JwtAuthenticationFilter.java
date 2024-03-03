@@ -34,7 +34,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
 
-    Optional<String> accessTokenOpt = this.tokenProvider.extractAccessToken(request)
+    Optional<String> accessTokenOpt = tokenProvider.extractAccessToken(request)
         .filter(tokenProvider::validateToken);
 
     if (accessTokenOpt.isPresent()) {
@@ -43,20 +43,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       SecurityContextHolder.getContext().setAuthentication(auth);
       filterChain.doFilter(request, response);
     } else {
-      String refreshToken = this.tokenProvider.extractRefreshToken(request)
+      String refreshToken = tokenProvider.extractRefreshToken(request)
           .filter(tokenProvider::validateToken)
           .orElse(null);
 
       if (refreshToken != null) {
-        refreshToken = checkRefreshTokenAndReIssueAccessToken(response, refreshToken);
-        Optional<MemberEntity> memberEntityOpt = memberRepository.findByRefreshToken(refreshToken);
-        if (memberEntityOpt.isPresent()) {
-          Member member = Member.fromEntity(memberEntityOpt.get());
-          String newAccessToken = this.tokenProvider.generateAccessToken(member);
+        Optional<MemberEntity> optionalMemberEntity = memberRepository.findByRefreshToken(refreshToken);
+        if (optionalMemberEntity.isPresent()) {
+          Member member = Member.fromEntity(optionalMemberEntity.get());
+          reIssueRefreshToken(member);
+          String newAccessToken = tokenProvider.generateAccessToken(member);
           Authentication newAuth = getAuthentication(newAccessToken);
           SecurityContextHolder.getContext().setAuthentication(newAuth);
         }
-
         filterChain.doFilter(request, response);
       } else {
         filterChain.doFilter(request, response);
@@ -65,30 +64,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   }
 
   public Authentication getAuthentication(String jwt) {
-    UserDetails userDetails = this.memberService.loadUserByUsername(this.tokenProvider.getUsername(jwt));
+    UserDetails userDetails = memberService.loadUserByUsername(tokenProvider.getUsername(jwt));
 
     return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
   }
 
-  public String checkRefreshTokenAndReIssueAccessToken(HttpServletResponse response, String refreshToken) {
-    AtomicReference<String> newRefreshTokenRef = new AtomicReference<>();
-
-    memberRepository.findByRefreshToken(refreshToken)
-        .ifPresent(memberEntity -> {
-          Member member = Member.fromEntity(memberEntity);
-          String reIssuedRefreshToken = reIssueRefreshToken(member);
-          tokenProvider.sendAccessAndRefreshToken(response, tokenProvider.generateAccessToken(member),
-              reIssuedRefreshToken);
-          newRefreshTokenRef.set(reIssuedRefreshToken);
-        });
-
-    return newRefreshTokenRef.get();
-  }
-
   private String reIssueRefreshToken(Member member) {
-    String reIssuedRefreshToken = this.tokenProvider.generateRefreshToken();
+    String reIssuedRefreshToken = tokenProvider.generateRefreshToken();
     member.updateRefreshToken(reIssuedRefreshToken);
-    this.memberRepository.saveAndFlush(member.toEntity());
+    memberRepository.saveAndFlush(member.toEntity());
     return reIssuedRefreshToken;
   }
+
+//  public String checkRefreshTokenAndReIssueAccessToken(HttpServletResponse response, String refreshToken) {
+//    AtomicReference<String> newRefreshTokenRef = new AtomicReference<>();
+//
+//    memberRepository.findByRefreshToken(refreshToken)
+//        .ifPresent(memberEntity -> {
+//          Member member = Member.fromEntity(memberEntity);
+//          String reIssuedRefreshToken = reIssueRefreshToken(member);
+//          tokenProvider.sendAccessAndRefreshToken(response, tokenProvider.generateAccessToken(member),
+//              reIssuedRefreshToken);
+//          newRefreshTokenRef.set(reIssuedRefreshToken);
+//        });
+//
+//    return newRefreshTokenRef.get();
+//  }
 }
