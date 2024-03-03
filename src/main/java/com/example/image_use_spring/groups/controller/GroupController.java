@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,5 +27,15 @@ public class GroupController {
   @GetMapping
   public ResponseEntity<?> getGroups(@AuthenticationPrincipal Member member) {
     return ResponseEntity.ok(chatGroupService.getChallengeGroups(member));
+  }
+
+  @GetMapping("/{groupId}/invite-link")
+  public ResponseEntity<?> createInviteLink(@PathVariable Long groupId, @AuthenticationPrincipal Member member) {
+    return ResponseEntity.ok(chatGroupService.createInviteLink(groupId, member));
+  }
+
+  @PostMapping("/join/{inviteLink}")
+  public ResponseEntity<?> joinGroup(@PathVariable String inviteLink, @AuthenticationPrincipal Member member) {
+    return ResponseEntity.ok(chatGroupService.joinChatGroup(inviteLink, member));
   }
 }
