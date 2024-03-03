@@ -21,40 +21,28 @@ public class ApiMemberController {
 
   private final MemberServiceImpl memberService;
 
-//  @PostMapping("/sign-up/email")
-//  public ResponseEntity<?> signUpWithEmail(@RequestBody @Valid EmailSignUpDto.Request memberSignUpRequest) {
-//    EmailSignUpDto.Response response = memberService.signUpWithEmail(memberSignUpRequest);
-//    return ResponseEntity.ok(response);
+//  @PostMapping("/sign-out")
+//  public ResponseEntity<?> signOut() {
+//    ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", "")
+//        .httpOnly(true)
+//        .path("/")
+//        .sameSite("None")
+//        .secure(true)
+//        .maxAge(0)
+//        .build();
+//
+//    ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", "")
+//        .httpOnly(true)
+//        .path("/")
+//        .sameSite("None")
+//        .secure(true)
+//        .maxAge(0)
+//        .build();
+//
+//    HttpHeaders headers = new HttpHeaders();
+//    headers.add(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
+//    headers.add(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
+//
+//    return ResponseEntity.status(HttpStatus.OK).headers(headers).body("로그아웃 되었습니다.");
 //  }
-
-  @PostMapping("/sign-in/email")
-  public ResponseEntity<?> signInWithEmail(@RequestBody @Valid EmailSignInRequestDto emailSignInRequestDto) {
-    memberService.signInWithEmail(emailSignInRequestDto);
-    return ResponseEntity.ok().build();
-  }
-
-  @PostMapping("/sign-out")
-  public ResponseEntity<?> signOut() {
-    ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", "")
-        .httpOnly(true)
-        .path("/")
-        .sameSite("None")
-        .secure(true)
-        .maxAge(0)
-        .build();
-
-    ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", "")
-        .httpOnly(true)
-        .path("/")
-        .sameSite("None")
-        .secure(true)
-        .maxAge(0)
-        .build();
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.add(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
-    headers.add(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
-
-    return ResponseEntity.status(HttpStatus.OK).headers(headers).body("로그아웃 되었습니다.");
-  }
 }
