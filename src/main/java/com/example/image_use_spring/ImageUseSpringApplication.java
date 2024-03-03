@@ -7,7 +7,9 @@ import java.nio.file.Paths;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
+@EnableJpaAuditing
 @SpringBootApplication
 public class ImageUseSpringApplication implements CommandLineRunner {
   private final String homeDirectory = System.getProperty("user.home");

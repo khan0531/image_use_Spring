@@ -1,28 +1,6 @@
-spring:
-  datasource:
-    url: jdbc:h2:mem:test
-    username: sa
-    password:
-    driverClassName: org.h2.Driver
-  h2:
-    console:
-      enabled: true
-  jpa:
-    defer-datasource-initialization: true # ?? ??? ???. ??? ?? ???? ??
-    database-platform: H2
-    hibernate:
-      ddl-auto: create-drop
-    open-in-view: false
-    properties:
-      hibernate:
-        format_sql: true
-        show_sql: true
-    mysql:
-      url: jdbc:mysql://localhost:3306/${MYSQL_DATABASE}
-      username: ${MYSQL_USERNAME}
-      password: ${MYSQL_PASSWORD}
-      driver-class-name: com.mysql.cj.jdbc.Driver
+app:
+  domainUrl: http://localhost:8080
 
-  mvc:
-    path match:
-      matching-strategy: ant_path_matcher
+spring:
+  profiles:
+    active: test

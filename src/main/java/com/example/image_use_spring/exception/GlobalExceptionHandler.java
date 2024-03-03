@@ -21,6 +21,15 @@ public class GlobalExceptionHandler {
         .build();
   }
 
+  @ExceptionHandler(MemberException.class)
+  public ErrorResponse handleMemberException(MemberException e) {
+    log.error("handleMemberException", e);
+    return ErrorResponse.builder()
+        .errorCode(e.getErrorCode())
+        .errorMessage(e.getErrorMessage())
+        .build();
+  }
+
   @ExceptionHandler(Exception.class)
   public ErrorResponse handleException(Exception e) {
     log.error("Exception", e);
