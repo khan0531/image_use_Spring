@@ -93,11 +93,11 @@ public class ImageServiceImpl implements ImageService {
 
     saveTaskStatus(checkStatus, "PROCESSING");
 
-    CompletableFuture<ImageEntity> originalImageFuture = saveOriginalImage(imageBytes, checkStatus, uuid, FilenameUtils.getExtension(file.getOriginalFilename()));
+    CompletableFuture<ImageEntity> originalImageFuture = saveOriginalImage(imageBytes, checkStatus, uuid, FilenameUtils.getExtension(file.getOriginalFilename()), member);
 
     return originalImageFuture.thenCompose(originalImage -> {
-      CompletableFuture<ImageEntity> compressedImageFuture = compressAndSaveImage(imageBytes, checkStatus, uuid, originalImage);
-      CompletableFuture<ImageEntity> thumbnailImageFuture = createThumbnailAndSave(imageBytes, checkStatus, uuid, originalImage);
+      CompletableFuture<ImageEntity> compressedImageFuture = compressAndSaveImage(imageBytes, checkStatus, uuid, originalImage, member);
+      CompletableFuture<ImageEntity> thumbnailImageFuture = createThumbnailAndSave(imageBytes, checkStatus, uuid, originalImage, member);
       return CompletableFuture.allOf(compressedImageFuture, thumbnailImageFuture).thenRunAsync(() -> {
         try {
           System.out.println("Image processing completed successfully2.");
@@ -149,14 +149,14 @@ public class ImageServiceImpl implements ImageService {
     return "https://localhost:8080/images/" + imageFileName;
   }
 
-  private CompletableFuture<ImageEntity> saveOriginalImage(byte[] imageBytes, String callbackUrl, String uuid, String extension) {
+  private CompletableFuture<ImageEntity> saveOriginalImage(byte[] imageBytes, String callbackUrl, String uuid, String extension,  Member member) {
 
     return CompletableFuture.supplyAsync(() -> {
       try {
         String originalFileName = uuid + "." + extension;
         Path originalFilePath = imageUtil.storeFile(imageBytes,
             imagesDirectory.resolve("originals").resolve(originalFileName));
-        return saveImageEntity(callbackUrl, originalFilePath, originalFileName, null);
+        return saveImageEntity(callbackUrl, originalFilePath, originalFileName, null, member);
       } catch (Exception e) {
         log.error("Failed to save original image.", e);
         throw new ImageException(INTERNAL_SERVER_ERROR);
@@ -164,14 +164,14 @@ public class ImageServiceImpl implements ImageService {
     });
   }
 
-  private CompletableFuture<ImageEntity> compressAndSaveImage(byte[] imageBytes, String callbackUrl, String uuid, ImageEntity originalImage) {
+  private CompletableFuture<ImageEntity> compressAndSaveImage(byte[] imageBytes, String callbackUrl, String uuid, ImageEntity originalImage,  Member member) {
     return CompletableFuture.supplyAsync(() -> {
       try {
         byte[] compressedImage = imageUtil.compressImage(imageBytes);
         String compressedFileName = "comp-" + uuid + "." + "jpg";
         Path compressedFilePath = imageUtil.storeFile(compressedImage,
             imagesDirectory.resolve("compresses").resolve(compressedFileName));
-        return saveImageEntity(callbackUrl, compressedFilePath, compressedFileName, originalImage);
+        return saveImageEntity(callbackUrl, compressedFilePath, compressedFileName, originalImage, member);
       } catch (Exception e) {
         log.error("Failed to compress and save image.", e);
         throw new ImageException(INTERNAL_SERVER_ERROR);
@@ -179,14 +179,14 @@ public class ImageServiceImpl implements ImageService {
     });
   }
 
-  private CompletableFuture<ImageEntity> createThumbnailAndSave(byte[] imageBytes, String callbackUrl, String uuid, ImageEntity originalImage) {
+  private CompletableFuture<ImageEntity> createThumbnailAndSave(byte[] imageBytes, String callbackUrl, String uuid, ImageEntity originalImage,  Member member) {
     return CompletableFuture.supplyAsync(() -> {
       try {
         byte[] thumbnailImage = imageUtil.createThumbnail(imageBytes, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT);
         String thumbnailFileName = "thumb-" + uuid + "." + "jpg";
         Path thumbnailFilePath = imageUtil.storeFile(thumbnailImage,
             imagesDirectory.resolve("thumbnails").resolve(thumbnailFileName));
-        return saveImageEntity(callbackUrl, thumbnailFilePath, thumbnailFileName, originalImage);
+        return saveImageEntity(callbackUrl, thumbnailFilePath, thumbnailFileName, originalImage, member);
       } catch (Exception e) {
         log.error("Failed to create thumbnail and save image.", e);
         throw new ImageException(INTERNAL_SERVER_ERROR);
@@ -194,11 +194,12 @@ public class ImageServiceImpl implements ImageService {
     });
   }
 
-  private ImageEntity saveImageEntity(String callbackUrl, Path filePath, String fileName, ImageEntity originalImage) {
+  private ImageEntity saveImageEntity(String callbackUrl, Path filePath, String fileName, ImageEntity originalImage, Member member) {
     return imageRepository.save(ImageEntity.builder()
         .uuid(callbackUrl)
         .imagePath(filePath.toString())
         .imageFileName(fileName)
+        .member(member.toEntity())
         .originalImage(originalImage)
         .build());
   }

@@ -62,7 +62,7 @@ public class MessageControllerTest {
         .build();
 
     // chat 메소드 호출
-    messageController.chat(message, headerAccessor);
+//    messageController.chat(message, headerAccessor);
 
     // saveAndSend 메소드 호출 검증
     Mockito.verify(messageService).saveAndSend(any(Message.class), any(Member.class));

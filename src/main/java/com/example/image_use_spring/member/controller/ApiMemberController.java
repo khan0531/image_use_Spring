@@ -9,35 +9,35 @@ import com.example.image_use_spring.member.dto.EmailSignInRequestDto;
 import com.example.image_use_spring.member.dto.EmailSignUpDto;
 import com.example.image_use_spring.member.dto.ResetPasswordLinkRequestDto;
 import com.example.image_use_spring.member.service.Impl.MemberServiceImpl;
+import com.example.image_use_spring.member.service.MemberService;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
+@Controller
 @RequiredArgsConstructor
-//@RequestMapping("/member")
 public class ApiMemberController {
 
-//  private final MemberServiceImpl memberService;
+//  private final MemberService memberService;
+//  @RequestMapping("/member/sign-in/email")
+//  public String signInWithEmail() {
 //
-//  @PostMapping("/member/sign-up/email-verifications")
-//  public ResponseEntity<?> sendEmailVerificationCode(@RequestBody EmailCodeRequestDto request) {
-//    memberService.sendEmailVerificationCode(request.getEmail());
-//    return ResponseEntity.ok().body("인증 코드가 이메일로 전송되었습니다.");
+//    return "member/sign-in/email";
 //  }
 //
-//  @PostMapping("/member/reset-password")
-//  public ResponseEntity<?> sendResetPasswordLink(@RequestBody ResetPasswordLinkRequestDto requestDto) {
-//    boolean response = memberService.sendResetPasswordLink(requestDto.getEmail());
-//    return ResponseEntity.ok(response);
+//  @PostMapping("/member/sign-in/email")
+//  public String signInWithEmail(@Valid EmailSignInRequestDto emailSignInRequestDto) {
+//    memberService.signInWithEmail(emailSignInRequestDto);
+//    return "index";
 //  }
 
 }

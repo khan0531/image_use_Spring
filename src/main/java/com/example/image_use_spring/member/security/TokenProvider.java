@@ -89,6 +89,7 @@ public class TokenProvider {
   public boolean validateToken(String token) {
     try {
       Jws<Claims> claims = getJwtParser().parseClaimsJws(token);
+      log.debug("claims: {}", claims);
 
       return !claims.getBody().getExpiration().before(new Date());
     } catch (Exception e) {

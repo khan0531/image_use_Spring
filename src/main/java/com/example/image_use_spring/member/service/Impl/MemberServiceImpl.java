@@ -105,22 +105,6 @@ public class MemberServiceImpl implements MemberService {
     return EmailSignUpDto.Response.fromEntity(memberEntity);
   }
 
-  @Override
-  public boolean verifyEmail(EmailCodeVerifyRequestDto requestDto) {
-    VerificationCode verificationCode = verificationCodeRepository.findById(requestDto.getEmail())
-        .orElseThrow(() -> new IllegalArgumentException("인증 코드가 존재하지 않습니다."));
-
-    if (verificationCode != null && verificationCode.getCode().equals(requestDto.getCode())) {
-      verificationCode.setVerified(true);
-      verificationCode.setTtl(TimeUnit.MINUTES.toSeconds(20));
-      verificationCodeRepository.save(verificationCode); // 인증 상태 업데이트
-
-      return true;
-    }
-
-    return false;
-  }
-
   public void signInWithEmail(EmailSignInRequestDto emailSignInRequestDto) {
     Member member = (Member) loadUserByUsername(emailSignInRequestDto.getEmail());
     if (!passwordEncoder.matches(emailSignInRequestDto.getPassword(), member.getPassword())) {
@@ -139,8 +123,7 @@ public class MemberServiceImpl implements MemberService {
   public String sendEmailVerificationCode(String email) {
     String code = memberUtil.verificationCodeGenerator();
 
-    simpleEmailService.sendEmail(email, "가게그만가계 가입 인증 코드입니다.",
-        String.format("%s/member/reset-password/%d/t/%s", "http://localhost:8080", code));
+    simpleEmailService.sendEmail(email, "가게그만가계 가입 인증 코드입니다.", code);
 
     VerificationCode verificationCode =
         new VerificationCode()
@@ -154,41 +137,20 @@ public class MemberServiceImpl implements MemberService {
     return "이메일 인증 메일을 전송했습니다.";
   }
 
-  public boolean sendResetPasswordLink(String email) {
-    String token = UUID.randomUUID().toString().replace("-", "");
-    MemberEntity memberEntity = memberRepository.findMemberIdByEmail(email)
-        .orElseThrow(() -> new MemberException(MEMBER_NOT_FOUND));
+  @Override
+  public boolean verifyEmail(EmailCodeVerifyRequestDto requestDto) {
+    VerificationCode verificationCode = verificationCodeRepository.findById(requestDto.getEmail())
+        .orElseThrow(() -> new IllegalArgumentException("인증 코드가 존재하지 않습니다."));
 
-    Long memberId = memberEntity.getId();
+    if (verificationCode != null && verificationCode.getCode().equals(requestDto.getCode())) {
+      verificationCode.setVerified(true);
+      verificationCode.setTtl(TimeUnit.MINUTES.toSeconds(20));
+      verificationCodeRepository.save(verificationCode); // 인증 상태 업데이트
 
-    simpleEmailService.sendEmail(email, "가게그만가계 비밀번호 재설정 링크입니다.",
-        String.format("%s/member/reset-password/%d/t/%s", "http://localhost:8080", memberId, token));
-
-    PasswordReset passwordReset = new PasswordReset().builder()
-        .email(email)
-        .memberId(memberId)
-        .token(token)
-        .build();
-    passwordResetRepository.save(passwordReset);
-
-    return true;
-  }
-
-  public boolean resetPassword(Long memberId, String token, String newPassword) {
-    PasswordReset passwordReset = passwordResetRepository.findById(memberId)
-        .orElseThrow(() -> new IllegalArgumentException("비밀번호 재설정 토큰이 존재하지 않습니다."));
-
-    if (!passwordReset.getToken().equals(token)) {
-      throw new IllegalArgumentException("비밀번호 재설정 토큰이 일치하지 않습니다.");
+      return true;
     }
 
-    MemberEntity memberEntity = memberRepository.findById(passwordReset.getMemberId())
-        .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
-
-    memberEntity.setPassword(passwordEncoder.encode(newPassword));
-    memberRepository.save(memberEntity);
-
-    return true;
+    return false;
   }
 
   public MemberEntity validateAndGetMember(Long memberId, Member member) {

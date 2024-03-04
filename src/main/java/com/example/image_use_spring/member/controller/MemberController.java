@@ -47,40 +47,26 @@ class MemberController {
     return ResponseEntity.ok().build();
   }
 
-//  @DeleteMapping("/withdrawal")
-//  public ResponseEntity<?> withdrawal(@AuthenticationPrincipal Member member) {
-//    String response = memberService.withdrawal(member);
-//
-//    return ResponseEntity.ok(response);
-//  }
-
-//  @PutMapping("/password")
-//  public ResponseEntity<?> changePassword(@RequestBody @Valid PasswordChangeRequestDto requestDto,
-//      @AuthenticationPrincipal Member member) {
-//    MessageResponseDto response = memberService.changePassword(requestDto, member);
-//    return ResponseEntity.ok(response);
-//  }
-
   @PostMapping("/email-verifications")
   public ResponseEntity<?> sendEmailVerificationCode(@RequestBody EmailCodeRequestDto requestDto) {
     String response = memberService.sendEmailVerificationCode(requestDto.getEmail());
     return ResponseEntity.ok(response);
   }
 
-//  @PutMapping("/email-verifications")
-//  public ResponseEntity<?> verifyEmail(@RequestBody EmailCodeVerifyRequestDto requestDto) {
-//    try {
-//      boolean isVerified = memberService.verifyEmail(requestDto);
-//
-//      if (isVerified) {
-//        return ResponseEntity.ok().body("이메일 인증에 성공했습니다.");
-//      } else {
-//        return ResponseEntity.badRequest().body("올바른 코드가 아닙니다.");
-//      }
-//    } catch (VerificationCodeException e) {
-//      return ResponseEntity.badRequest().body(e.getMessage());
-//    }
-//  }
+  @PutMapping("/email-verifications")
+  public ResponseEntity<?> verifyEmail(@RequestBody EmailCodeVerifyRequestDto requestDto) {
+    try {
+      boolean isVerified = memberService.verifyEmail(requestDto);
+
+      if (isVerified) {
+        return ResponseEntity.ok().body("이메일 인증에 성공했습니다.");
+      } else {
+        return ResponseEntity.badRequest().body("올바른 코드가 아닙니다.");
+      }
+    } catch (Exception e) {
+      return ResponseEntity.badRequest().body(e.getMessage());
+    }
+  }
 
 //  @PostMapping("/reset-password")
 //  public ResponseEntity<?> sendResetPasswordLink(@RequestBody ResetPasswordLinkRequestDto requestDto) {

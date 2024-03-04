@@ -48,8 +48,6 @@ public class MemberEntity extends BaseTimeEntity {
   @Column(unique = true)
   private String email;
 
-  private boolean emailAuthYn;
-
   private String password;
 
   @Enumerated(EnumType.STRING)

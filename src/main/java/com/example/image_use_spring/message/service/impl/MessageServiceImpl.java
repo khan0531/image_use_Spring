@@ -24,6 +24,6 @@ public class MessageServiceImpl implements MessageService {
     MemberEntity memberEntity = memberService.validateAndGetMember(member);
     message.setSenderId(memberEntity.getId());
     messageRepository.save(message.toEntity());
-    messagingTemplate.convertAndSend("/chat/groups/" + message.getGroupId(), message);
+    messagingTemplate.convertAndSend("/sub/groups/" + message.getGroupId(), message);
   }
 }
