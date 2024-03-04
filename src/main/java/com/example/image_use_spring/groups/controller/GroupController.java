@@ -3,6 +3,8 @@ package com.example.image_use_spring.groups.controller;
 import com.example.image_use_spring.groups.dto.ChatGroupDto;
 import com.example.image_use_spring.groups.service.ChatGroupService;
 import com.example.image_use_spring.member.domain.Member;
+import com.example.image_use_spring.message.domain.Message;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -50,5 +52,11 @@ public class GroupController {
   @DeleteMapping("/{groupId}")
   public ResponseEntity<?> deleteGroup(@PathVariable Long groupId, @AuthenticationPrincipal Member member) {
     return ResponseEntity.ok(chatGroupService.deleteChatGroup(groupId, member));
+  }
+
+  @GetMapping("/{groupId}/messages")
+  public ResponseEntity<?> getMessages(@PathVariable Long groupId, @AuthenticationPrincipal Member member) {
+    List<Message> messages = chatGroupService.getMessages(groupId, member);
+    return ResponseEntity.ok(messages);
   }
 }

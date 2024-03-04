@@ -19,6 +19,9 @@ import com.example.image_use_spring.groups.persist.repository.ChatGroupRepositor
 import com.example.image_use_spring.groups.persist.repository.MemberGroupRepository;
 import com.example.image_use_spring.groups.service.ChatGroupService;
 import com.example.image_use_spring.member.domain.Member;
+import com.example.image_use_spring.message.domain.Message;
+import com.example.image_use_spring.message.persist.entity.MessageEntity;
+import com.example.image_use_spring.message.persist.repository.MessageRepository;
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,6 +36,7 @@ public class ChatGroupServiceImpl implements ChatGroupService {
 
   private final ChatGroupRepository chatGroupRepository;
   private final MemberGroupRepository memberGroupRepository;
+  private final MessageRepository messageRepository;
 
   private static int INVITE_LINK_LENGTH = 10;
   private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -140,6 +144,17 @@ public class ChatGroupServiceImpl implements ChatGroupService {
     return challengeGroup;
   }
 
+  public List<Message> getMessages(Long groupId, Member member) {
+    ChatGroupEntity challengeGroupEntity = chatGroupRepository.findById(groupId)
+        .orElseThrow(() -> new IllegalArgumentException("그룹이 존재하지 않습니다."));
+
+    if (!isChatGroupMember(ChatGroup.fromEntity(challengeGroupEntity), member)) {
+      throw new IllegalArgumentException("그룹에 속해 있지 않습니다.");
+    }
+    List<MessageEntity> messageEntities = messageRepository.findByGroup(challengeGroupEntity);
+    return Message.fromEntities(messageEntities);
+  }
+
   private static String generateRandomString(int length) {
     StringBuilder sb = new StringBuilder(length);
     for (int i = 0; i < length; i++) {
@@ -162,5 +177,4 @@ public class ChatGroupServiceImpl implements ChatGroupService {
 
     return memberIds.contains(member.getId());
   }
-
 }

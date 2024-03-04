@@ -5,6 +5,7 @@ import com.example.image_use_spring.groups.dto.ChatGroupDto.Request;
 import com.example.image_use_spring.groups.dto.ChatGroupDto.Response;
 import com.example.image_use_spring.groups.dto.InviteLinkResponseDto;
 import com.example.image_use_spring.member.domain.Member;
+import com.example.image_use_spring.message.domain.Message;
 import java.util.List;
 
 public interface ChatGroupService {
@@ -20,4 +21,6 @@ public interface ChatGroupService {
   Response updateChatGroup(Long groupId, Request request, Member member);
 
   Object deleteChatGroup(Long groupId, Member member);
+
+  List<Message> getMessages(Long groupId, Member member);
 }
