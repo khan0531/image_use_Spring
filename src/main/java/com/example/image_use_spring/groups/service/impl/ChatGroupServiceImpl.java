@@ -99,6 +99,9 @@ public class ChatGroupServiceImpl implements ChatGroupService {
       throw new GroupException(GROUP_FULL);
     }
 
+    //    Message enterMessage = Message.createEnterMessage(chatGroup, member);
+//
+//    mess
 
     MemberGroup memberGroup = MemberGroup.create(chatGroup, member);
     memberGroupRepository.save(memberGroup.toEntity());
