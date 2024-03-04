@@ -44,7 +44,7 @@ public class ChatGroupServiceImpl implements ChatGroupService {
 
 
   @Override
-  public ChatGroupDto.Response createChallengeGroup(ChatGroupDto.Request request,
+  public ChatGroupDto.Response createChatGroup(ChatGroupDto.Request request,
       Member member) {
 
     ChatGroupEntity chatGroupEntity = chatGroupRepository.save(
@@ -57,7 +57,7 @@ public class ChatGroupServiceImpl implements ChatGroupService {
   }
 
   @Override
-  public List<ChatGroupDto.Response> getChallengeGroups(Member member) {
+  public List<ChatGroupDto.Response> getChatGroups(Member member) {
     List<ChatGroupEntity> chatGroupEntities = memberGroupRepository.findByMember(member.toEntity())
         .stream()
         .map(MemberGroupEntity::getChatGroup)

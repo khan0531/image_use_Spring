@@ -10,9 +10,9 @@ import java.util.List;
 
 public interface ChatGroupService {
 
-  ChatGroupDto.Response createChallengeGroup(Request request, Member member);
+  ChatGroupDto.Response createChatGroup(Request request, Member member);
 
-  List<ChatGroupDto.Response> getChallengeGroups(Member member);
+  List<ChatGroupDto.Response> getChatGroups(Member member);
 
   InviteLinkResponseDto createInviteLink(Long groupId, Member member);
 

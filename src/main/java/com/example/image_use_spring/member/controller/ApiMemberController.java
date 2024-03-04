@@ -23,21 +23,21 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/member")
+//@RequestMapping("/member")
 public class ApiMemberController {
 
-  private final MemberServiceImpl memberService;
-
-  @PostMapping("/member/sign-up/email-verifications")
-  public ResponseEntity<?> sendEmailVerificationCode(@RequestBody EmailCodeRequestDto request) {
-    memberService.sendEmailVerificationCode(request.getEmail());
-    return ResponseEntity.ok().body("인증 코드가 이메일로 전송되었습니다.");
-  }
-
-  @PostMapping("/member/reset-password")
-  public ResponseEntity<?> sendResetPasswordLink(@RequestBody ResetPasswordLinkRequestDto requestDto) {
-    boolean response = memberService.sendResetPasswordLink(requestDto.getEmail());
-    return ResponseEntity.ok(response);
-  }
+//  private final MemberServiceImpl memberService;
+//
+//  @PostMapping("/member/sign-up/email-verifications")
+//  public ResponseEntity<?> sendEmailVerificationCode(@RequestBody EmailCodeRequestDto request) {
+//    memberService.sendEmailVerificationCode(request.getEmail());
+//    return ResponseEntity.ok().body("인증 코드가 이메일로 전송되었습니다.");
+//  }
+//
+//  @PostMapping("/member/reset-password")
+//  public ResponseEntity<?> sendResetPasswordLink(@RequestBody ResetPasswordLinkRequestDto requestDto) {
+//    boolean response = memberService.sendResetPasswordLink(requestDto.getEmail());
+//    return ResponseEntity.ok(response);
+//  }
 
 }

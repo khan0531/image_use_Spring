@@ -2,6 +2,7 @@ package com.example.image_use_spring.image.controller;
 
 import com.example.image_use_spring.image.dto.ImagePathResponseDto;
 import com.example.image_use_spring.image.service.ImageService;
+import com.example.image_use_spring.member.domain.Member;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,12 +32,13 @@ public class ImageController {
   @PostMapping("/upload")
   public ResponseEntity<?> uploadFile(
       @RequestParam("file") MultipartFile file,
-      @RequestParam("callbackUrl") String callbackUrl
+      @RequestParam("callbackUrl") String callbackUrl,
+      @AuthenticationPrincipal Member member
   ) throws IOException {
     String checkStatus = UUID.randomUUID().toString().replace("-", "");
 
     // 비동기 작업 시작
-    imageService.uploadFile(file, callbackUrl, checkStatus);
+    imageService.uploadFile(file, callbackUrl, checkStatus, member);
 
     // 비동기 작업이 정상적으로 시작 되었다는 응답, 비동기 작업을 추적할 수 있도록 UUID 반환
     Map<String, String> response = new HashMap<>();
@@ -58,9 +61,11 @@ public class ImageController {
   }
 
   @GetMapping("/{imageFileName}")
-  public ResponseEntity<Resource> getImageUrl(@PathVariable String imageFileName) {
+  public ResponseEntity<Resource> getImageUrl(
+      @PathVariable String imageFileName,
+      @AuthenticationPrincipal Member member) {
 
-    Resource resource = imageService.loadImageAsResource(imageFileName);
+    Resource resource = imageService.loadImageAsResource(imageFileName, member);
     return ResponseEntity.ok()
         .contentType(MediaType.IMAGE_JPEG)
         .body(resource);

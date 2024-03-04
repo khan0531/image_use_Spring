@@ -5,6 +5,7 @@ import static com.example.image_use_spring.exception.type.ErrorCode.INTERNAL_SER
 import static com.example.image_use_spring.exception.type.ErrorCode.NOT_FOUND_TASK;
 
 import com.example.image_use_spring.exception.ImageException;
+import com.example.image_use_spring.exception.type.ErrorCode;
 import com.example.image_use_spring.image.dto.ImagePathResponseDto;
 import com.example.image_use_spring.image.persist.entity.ImageEntity;
 import com.example.image_use_spring.image.persist.entity.TaskStatus;
@@ -12,6 +13,8 @@ import com.example.image_use_spring.image.persist.repository.ImageRepository;
 import com.example.image_use_spring.image.persist.repository.TaskStatusRepository;
 import com.example.image_use_spring.image.service.ImageService;
 import com.example.image_use_spring.image.util.ImageUtil;
+import com.example.image_use_spring.member.domain.Member;
+import com.example.image_use_spring.member.service.MemberService;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -43,6 +46,8 @@ public class ImageServiceImpl implements ImageService {
   private static final int THUMBNAIL_WIDTH = 512;
   private static final int THUMBNAIL_HEIGHT = 512;
 
+  private final MemberService memberService;
+
   private final ImageRepository imageRepository;
   private final TaskStatusRepository taskStatusRepository;
   private final ImageUtil imageUtil;
@@ -73,7 +78,9 @@ public class ImageServiceImpl implements ImageService {
   }
 
   @Override
-  public CompletableFuture<Void> uploadFile(MultipartFile file, String callbackUrl, String checkStatus) {
+  public CompletableFuture<Void> uploadFile(MultipartFile file, String callbackUrl, String checkStatus, Member member){
+    memberService.validateAndGetMember(member);
+
     String uuid = UUID.randomUUID().toString().replace("-", "");
     byte[] imageBytes;
     try {
@@ -197,9 +204,11 @@ public class ImageServiceImpl implements ImageService {
   }
 
   @Override
-  public Resource loadImageAsResource(String imageFileName) {
+  public Resource loadImageAsResource(String imageFileName, Member member) {
     ImageEntity image = imageRepository.findByImageFileName(imageFileName)
         .orElseThrow(() -> new ImageException(FILE_NOT_FOUND));
+
+    memberService.validateAndGetMember(image.getMember().getId(), member);
 
     String imagePath = image.getImagePath();
 
@@ -208,7 +217,7 @@ public class ImageServiceImpl implements ImageService {
     if (resource.exists() || resource.isReadable()) {
       return resource;
     } else {
-      throw new ImageException(INTERNAL_SERVER_ERROR);
+      throw new ImageException(FILE_NOT_FOUND);
     }
   }
 }

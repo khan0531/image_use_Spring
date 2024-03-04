@@ -15,8 +15,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@RequestMapping("/api/v1/groups")
+@RestController
+@RequestMapping("/groups")
 @RequiredArgsConstructor
 public class GroupController {
 
@@ -25,12 +27,12 @@ public class GroupController {
   @PostMapping
   public ResponseEntity<?> createGroup(@RequestBody ChatGroupDto.Request request,
       @AuthenticationPrincipal Member member) {
-    return ResponseEntity.ok(chatGroupService.createChallengeGroup(request, member));
+    return ResponseEntity.ok(chatGroupService.createChatGroup(request, member));
   }
 
   @GetMapping
   public ResponseEntity<?> getGroups(@AuthenticationPrincipal Member member) {
-    return ResponseEntity.ok(chatGroupService.getChallengeGroups(member));
+    return ResponseEntity.ok(chatGroupService.getChatGroups(member));
   }
 
   @GetMapping("/{groupId}/invite-link")

@@ -1,59 +1,59 @@
-<!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8">
-  <title>이메일 회원 가입</title>
-  <script>
-    function sendEmailVerificationCode() {
-      const email = document.querySelector('input[name="email"]').value;
-      fetch('/member/sign-up/email-verifications', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email: email })
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then(data => {
-        alert(data); // 성공 메시지를 표시, 서버 응답에 따라 메시지를 조정할 수 있습니다.
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-        alert('Error sending verification code.');
-      });
-    }
-  </script>
-</head>
-<body>
-  <h1> 이메일 회원 가입 </h1>
-  <!--
-  // 아이디(이메일), 이름, 전화번호, 비밀번호
-  -->
-  <div th:replace="/fragment/layout.html :: fragment-body-menu"></div>
-  <form method="post">
-    <div>
-      <input type="email" name="email" placeholder="아이디(이메일) 입력" required/>
-      <button type="button" onclick="sendEmailVerificationCode()">인증 코드 보내기</button>
-    </div>
-    <div>
-      <input type="text" name="name" placeholder="이름 입력"required/>
-    </div>
-    <div>
-      <input type="password" name="password" placeholder="비밀번호 입력"required/>
-    </div>
-    <div>
-      <input type="password" name="passwordConfirm" placeholder="비밀번호 재확인" required/>
-    </div>
-    <div>
-      <button type="submit"> 회원 가입 </button>
-    </div>
-  </form>
+<!--<!DOCTYPE html>-->
+<!--<html lang="en" xmlns:th="http://www.thymeleaf.org">-->
+<!--<head>-->
+<!--  <meta charset="UTF-8">-->
+<!--  <title>이메일 회원 가입</title>-->
+<!--  <script>-->
+<!--    function sendEmailVerificationCode() {-->
+<!--      const email = document.querySelector('input[name="email"]').value;-->
+<!--      fetch('/member/sign-up/email-verifications', {-->
+<!--        method: 'POST',-->
+<!--        headers: {-->
+<!--          'Content-Type': 'application/json'-->
+<!--        },-->
+<!--        body: JSON.stringify({ email: email })-->
+<!--      })-->
+<!--      .then(response => {-->
+<!--        if (!response.ok) {-->
+<!--          throw new Error('Network response was not ok');-->
+<!--        }-->
+<!--        return response.json();-->
+<!--      })-->
+<!--      .then(data => {-->
+<!--        alert(data); // 성공 메시지를 표시, 서버 응답에 따라 메시지를 조정할 수 있습니다.-->
+<!--      })-->
+<!--      .catch((error) => {-->
+<!--        console.error('Error:', error);-->
+<!--        alert('Error sending verification code.');-->
+<!--      });-->
+<!--    }-->
+<!--  </script>-->
+<!--</head>-->
+<!--<body>-->
+<!--  <h1> 이메일 회원 가입 </h1>-->
+<!--  &lt;!&ndash;-->
+<!--  // 아이디(이메일), 이름, 전화번호, 비밀번호-->
+<!--  &ndash;&gt;-->
+<!--  <div th:replace="/fragment/layout.html :: fragment-body-menu"></div>-->
+<!--  <form method="post">-->
+<!--    <div>-->
+<!--      <input type="email" name="email" placeholder="아이디(이메일) 입력" required/>-->
+<!--      <button type="button" onclick="sendEmailVerificationCode()">인증 코드 보내기</button>-->
+<!--    </div>-->
+<!--    <div>-->
+<!--      <input type="text" name="name" placeholder="이름 입력"required/>-->
+<!--    </div>-->
+<!--    <div>-->
+<!--      <input type="password" name="password" placeholder="비밀번호 입력"required/>-->
+<!--    </div>-->
+<!--    <div>-->
+<!--      <input type="password" name="passwordConfirm" placeholder="비밀번호 재확인" required/>-->
+<!--    </div>-->
+<!--    <div>-->
+<!--      <button type="submit"> 회원 가입 </button>-->
+<!--    </div>-->
+<!--  </form>-->
 
 
-</body>
-</html>
+<!--</body>-->
+<!--</html>-->
