@@ -1,6 +1,7 @@
 package com.example.image_use_spring.member.service.Impl;
 
 import static com.example.image_use_spring.exception.type.ErrorCode.MEMBER_ALREADY_EXIST;
+import static com.example.image_use_spring.exception.type.ErrorCode.MEMBER_NOT_AUTHORIZED;
 import static com.example.image_use_spring.exception.type.ErrorCode.MEMBER_NOT_FOUND;
 import static com.example.image_use_spring.exception.type.ErrorCode.MEMBER_NOT_MATCH;
 import static com.example.image_use_spring.exception.type.ErrorCode.MEMBER_VERIFICATION_NOT_ACTIVE;
@@ -190,5 +191,18 @@ public class MemberServiceImpl implements MemberService {
     return true;
   }
 
+  public MemberEntity validateAndGetMember(Long memberId, Member member) {
+    if (!Objects.equals(memberId, member.getId())) {
+      throw new MemberException(MEMBER_NOT_AUTHORIZED);
+    }
+
+    return memberRepository.findById(memberId).orElseThrow(
+        ()->new MemberException(MEMBER_NOT_FOUND));
+  }
+
+  public MemberEntity validateAndGetMember(Member member) {
+    return memberRepository.findById(member.getId()).orElseThrow(
+        ()->new MemberException(MEMBER_NOT_FOUND));
+  }
 
 }
