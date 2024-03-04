@@ -4,6 +4,7 @@ import static com.example.image_use_spring.exception.type.ErrorCode.FILE_NOT_FOU
 import static com.example.image_use_spring.exception.type.ErrorCode.INTERNAL_SERVER_ERROR;
 import static com.example.image_use_spring.exception.type.ErrorCode.NOT_FOUND_TASK;
 import static com.example.image_use_spring.exception.type.ErrorCode.OCR_FAILED;
+import static com.example.image_use_spring.exception.type.ErrorCode.OCR_NOT_FOUND;
 
 import com.example.image_use_spring.exception.ImageException;
 import com.example.image_use_spring.exception.type.ErrorCode;
@@ -13,6 +14,7 @@ import com.example.image_use_spring.image.dto.OcrResultDto;
 import com.example.image_use_spring.image.persist.entity.ImageEntity;
 import com.example.image_use_spring.image.persist.entity.TaskStatus;
 import com.example.image_use_spring.image.persist.repository.ImageRepository;
+import com.example.image_use_spring.image.persist.repository.OcrResultRepository;
 import com.example.image_use_spring.image.persist.repository.TaskStatusRepository;
 import com.example.image_use_spring.image.service.ImageService;
 import com.example.image_use_spring.image.util.ImageUtil;
@@ -57,16 +59,23 @@ public class ImageServiceImpl implements ImageService {
 
   private final ImageRepository imageRepository;
   private final TaskStatusRepository taskStatusRepository;
+  private final OcrResultRepository ocrResultRepository;
+
   private final ImageUtil imageUtil;
   private final OcrUtil ocrUtil;
+
+  @Override
+  public OcrResultDto getOcrResult(Long id) {
+    return ocrResultRepository.findById(id)
+        .map(OcrResultDto::fromEntity)
+        .orElseThrow(() -> new ImageException(OCR_NOT_FOUND));
+  }
 
   @Override
   public ImagePathResponseDto getImagePath(String uuid) {
     ImageEntity image = imageRepository.findByUuid(uuid)
         .orElseThrow(() -> new ImageException(FILE_NOT_FOUND));
-
     return null;
-
   }
 
   @Override
@@ -123,7 +132,6 @@ public class ImageServiceImpl implements ImageService {
     return imageProcessingFuture.thenRunAsync(() -> {
       if (isReceipt) {
         performOcrAnalysisAsync(file).exceptionally(e -> {
-
           log.error("OCR processing failed.", e);
           throw new ImageException(OCR_FAILED);
         });
@@ -143,12 +151,13 @@ public class ImageServiceImpl implements ImageService {
 
         OcrResult ocrResult = new OcrResultExtractor().extractOcrResult(content);
 
-        System.out.println("OCR Date: " + ocrResult.getOcrDate());
-        System.out.println("OCR Amount: " + ocrResult.getOcrAmount());
-        System.out.println("OCR Vendor: " + ocrResult.getOcrVendor());
-        System.out.println("OCR Address: " + ocrResult.getOcrAddress());
+        log.info("OCR Date: " + ocrResult.getOcrDate());
+        log.info("OCR Amount: " + ocrResult.getOcrAmount());
+        log.info("OCR Vendor: " + ocrResult.getOcrVendor());
+        log.info("OCR Address: " + ocrResult.getOcrAddress());
+        log.info("OCR Analysis Result: " + content.toPrettyString());
 
-        System.out.println("OCR Analysis Result: " + content.toPrettyString());
+        ocrResultRepository.save(ocrResult.toEntity());
         // 여기서 OCR 결과를 저장하거나 다음 단계로 전달하는 로직 추가
       } catch (Exception e) {
         throw new ImageException(OCR_FAILED);

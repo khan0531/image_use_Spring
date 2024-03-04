@@ -1,6 +1,7 @@
 package com.example.image_use_spring.image.controller;
 
 import com.example.image_use_spring.image.dto.ImagePathResponseDto;
+import com.example.image_use_spring.image.dto.OcrResultDto;
 import com.example.image_use_spring.image.service.ImageService;
 import com.example.image_use_spring.member.domain.Member;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -51,21 +52,21 @@ public class ImageController {
     // 비동기 작업이 정상적으로 시작 되었다는 응답, 비동기 작업을 추적할 수 있도록 UUID 반환
     Map<String, String> response = new HashMap<>();
     response.put("message", "Image processing started");
-    response.put("uuid", checkStatus);
+    response.put("checkStatus Code", checkStatus);
 
     return ResponseEntity.accepted().body(response);
+  }
+
+  @GetMapping("/status/{statusCode}")
+  public ResponseEntity<?> getStatus(@PathVariable String statusCode) {
+    // UUID로 만든 status 코드를 사용하여 작업 상태를 조회
+    String status = imageService.getTaskStatus(statusCode);
+    return ResponseEntity.ok().body(status);
   }
 
   @PostMapping("/callback")
   public ResponseEntity<String> handleCallback(@RequestBody Map<String, Object> callbackData) {
     return ResponseEntity.ok("");
-  }
-
-  @GetMapping("/status/{uuid}")
-  public ResponseEntity<?> getStatus(@PathVariable String uuid) {
-    // UUID를 사용하여 작업 상태를 조회
-    String status = imageService.getTaskStatus(uuid);
-    return ResponseEntity.ok().body(status);
   }
 
   @GetMapping("/{imageFileName}")
@@ -77,5 +78,11 @@ public class ImageController {
     return ResponseEntity.ok()
         .contentType(MediaType.IMAGE_JPEG)
         .body(resource);
+  }
+
+  @GetMapping("/ocr/{id}")
+  public ResponseEntity<OcrResultDto> getOcrResult(@PathVariable Long id) {
+    OcrResultDto response = imageService.getOcrResult(id);
+    return ResponseEntity.ok().body(response);
   }
 }

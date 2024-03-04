@@ -123,7 +123,7 @@ public class MemberServiceImpl implements MemberService {
   public String sendEmailVerificationCode(String email) {
     String code = memberUtil.verificationCodeGenerator();
 
-    simpleEmailService.sendEmail(email, "가게그만가계 가입 인증 코드입니다.", code);
+    simpleEmailService.sendEmail(email, "이메일 가입 인증 코드입니다.", code);
 
     VerificationCode verificationCode =
         new VerificationCode()
