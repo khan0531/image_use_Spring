@@ -37,16 +37,17 @@ public class ImageController {
   @PostMapping("/upload")
   public ResponseEntity<?> uploadFile(
       @RequestParam("file") MultipartFile file,
-      @RequestPart("json-data") String jsonData,
+      @RequestPart("receipt") String receipt,
       @RequestParam("callbackUrl") String callbackUrl,
       @AuthenticationPrincipal Member member
   ) throws IOException {
     String checkStatus = UUID.randomUUID().toString().replace("-", "");
 
-    JsonNode rootNode = objectMapper.readTree(jsonData);
-    boolean isReceipt = rootNode.get("isReceipt").asBoolean();
+    JsonNode rootNode = objectMapper.readTree(receipt);
+    boolean isReceipt = rootNode.asBoolean();
 
     // 비동기 작업 시작
+
     imageService.uploadFile(file, callbackUrl, checkStatus, member, isReceipt);
 
     // 비동기 작업이 정상적으로 시작 되었다는 응답, 비동기 작업을 추적할 수 있도록 UUID 반환
