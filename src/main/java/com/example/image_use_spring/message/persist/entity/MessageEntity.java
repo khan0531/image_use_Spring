@@ -1,5 +1,6 @@
 package com.example.image_use_spring.message.persist.entity;
 
+import com.example.image_use_spring.common.entity.BaseTimeEntity;
 import com.example.image_use_spring.groups.persist.entity.ChatGroupEntity;
 import com.example.image_use_spring.member.persist.entity.MemberEntity;
 import com.example.image_use_spring.message.dto.MessageType;
@@ -19,7 +20,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class MessageEntity {
+public class MessageEntity extends BaseTimeEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
