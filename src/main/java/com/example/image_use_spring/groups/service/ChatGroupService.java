@@ -18,4 +18,6 @@ public interface ChatGroupService {
   ChatGroupDto.Response joinChatGroup(String inviteLink, Member member);
 
   Response updateChatGroup(Long groupId, Request request, Member member);
+
+  Object deleteChatGroup(Long groupId, Member member);
 }

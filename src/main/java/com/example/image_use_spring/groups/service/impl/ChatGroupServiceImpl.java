@@ -1,5 +1,8 @@
 package com.example.image_use_spring.groups.service.impl;
 
+import static com.example.image_use_spring.exception.type.ErrorCode.ALREADY_GROUP_MEMBER;
+import static com.example.image_use_spring.exception.type.ErrorCode.GROUP_FULL;
+import static com.example.image_use_spring.exception.type.ErrorCode.GROUP_IS_DELETED;
 import static com.example.image_use_spring.exception.type.ErrorCode.GROUP_NOT_ADMIN;
 import static com.example.image_use_spring.exception.type.ErrorCode.GROUP_NOT_FOUND;
 import static com.example.image_use_spring.exception.type.ErrorCode.GROUP_NOT_MEMBER;
@@ -39,8 +42,9 @@ public class ChatGroupServiceImpl implements ChatGroupService {
   @Override
   public ChatGroupDto.Response createChallengeGroup(ChatGroupDto.Request request,
       Member member) {
+
     ChatGroupEntity chatGroupEntity = chatGroupRepository.save(
-        ChatGroup.fromRequest(request, member).toEntity());
+        ChatGroup.fromRequest(request, member).setActivatedChainable(true).toEntity());
 
     memberGroupRepository.save(MemberGroup.create(ChatGroup.fromEntity(chatGroupEntity), member)
         .toEntity());
@@ -60,9 +64,7 @@ public class ChatGroupServiceImpl implements ChatGroupService {
 
   @Override
   public InviteLinkResponseDto createInviteLink(Long groupId, Member member) {
-    ChatGroup chatGroup = chatGroupRepository.findById(groupId)
-        .map(ChatGroup::fromEntity)
-        .orElseThrow(() -> new GroupException(GROUP_NOT_FOUND));
+    ChatGroup chatGroup = getChatGroup(groupId);
 
     if (!isChatGroupMember(chatGroup, member)) {
       throw new GroupException(GROUP_NOT_MEMBER);
@@ -83,19 +85,20 @@ public class ChatGroupServiceImpl implements ChatGroupService {
   public ChatGroupDto.Response joinChatGroup(String inviteLink, Member member) {
     ChatGroup chatGroup = chatGroupRepository.findByInviteLink(inviteLink)
         .map(ChatGroup::fromEntity)
-        .orElseThrow(() -> new IllegalArgumentException("그룹이 존재하지 않습니다."));
+        .orElseThrow(() -> new GroupException(GROUP_NOT_FOUND));
+
+    if (!chatGroup.isActivated()) {
+      throw new GroupException(GROUP_IS_DELETED);
+    }
 
     if (isChatGroupMember(chatGroup, member)) {
-      throw new IllegalArgumentException("이미 그룹에 속해있습니다.");
+      throw new GroupException(ALREADY_GROUP_MEMBER);
     }
 
     if (chatGroup.getMaxMembers() <= memberGroupRepository.countByChatGroup(chatGroup.toEntity())) {
-      throw new IllegalArgumentException("그룹 인원이 꽉 찼습니다.");
+      throw new GroupException(GROUP_FULL);
     }
 
-//    Message enterMessage = Message.createEnterMessage(chatGroup, member);
-//
-//    messageService.saveAndSend(enterMessage, member);
 
     MemberGroup memberGroup = MemberGroup.create(chatGroup, member);
     memberGroupRepository.save(memberGroup.toEntity());
@@ -106,15 +109,32 @@ public class ChatGroupServiceImpl implements ChatGroupService {
   @Override
   public ChatGroupDto.Response updateChatGroup(Long groupId, ChatGroupDto.Request request,
       Member member) {
-    ChatGroup challengeGroup = chatGroupRepository.findById(groupId)
-        .map(ChatGroup::fromEntity)
-        .orElseThrow(() -> new GroupException(GROUP_NOT_FOUND));
+    ChatGroup challengeGroup = getChatGroup(groupId);
 
     if (!challengeGroup.isAdmin(member)) {
       throw new GroupException(GROUP_NOT_ADMIN);
     }
     return ChatGroupDto.Response.fromEntity(
         chatGroupRepository.save(challengeGroup.update(request).toEntity()));
+  }
+
+  @Override
+  public ChatGroupDto.Response deleteChatGroup(Long groupId, Member member) {
+    ChatGroup challengeGroup = getChatGroup(groupId);
+
+    if (!challengeGroup.isAdmin(member)) {
+      throw new GroupException(GROUP_NOT_ADMIN);
+    }
+
+    return ChatGroupDto.Response.fromEntity(
+        chatGroupRepository.save(challengeGroup.setActivatedChainable(false).toEntity()));
+  }
+
+  private ChatGroup getChatGroup(Long groupId) {
+    ChatGroup challengeGroup = chatGroupRepository.findById(groupId)
+        .map(ChatGroup::fromEntity)
+        .orElseThrow(() -> new GroupException(GROUP_NOT_FOUND));
+    return challengeGroup;
   }
 
   private static String generateRandomString(int length) {

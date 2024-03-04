@@ -42,4 +42,6 @@ public class ChatGroupEntity extends BaseTimeEntity {
   private String inviteLink;
 
   private LocalDateTime linkExpiredAt;
+
+  private boolean isActivated;
 }

@@ -37,6 +37,13 @@ public class ChatGroup {
 
   private LocalDateTime linkExpiredAt;
 
+  private boolean isActivated;
+
+  public ChatGroup setActivatedChainable(boolean activated) {
+    setActivated(activated);
+    return this;
+  }
+
   public static ChatGroup fromRequest(ChatGroupDto.Request groupRequest, Member member) {
     return ChatGroup.builder()
         .name(groupRequest.getName())
@@ -59,6 +66,7 @@ public class ChatGroup {
         .adminId(chatGroupEntity.getAdmin().getId())
         .inviteLink(chatGroupEntity.getInviteLink())
         .linkExpiredAt(chatGroupEntity.getLinkExpiredAt())
+        .isActivated(chatGroupEntity.isActivated())
         .build();
   }
 
@@ -77,6 +85,7 @@ public class ChatGroup {
         .admin(MemberEntity.builder().id(adminId).build())
         .inviteLink(inviteLink)
         .linkExpiredAt(linkExpiredAt)
+        .isActivated(isActivated)
         .build();
   }
 

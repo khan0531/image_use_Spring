@@ -6,6 +6,7 @@ import com.example.image_use_spring.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -44,5 +45,10 @@ public class GroupController {
   public ResponseEntity<?> updateGroup(@PathVariable Long groupId,
       @RequestBody ChatGroupDto.Request request, @AuthenticationPrincipal Member member) {
     return ResponseEntity.ok(chatGroupService.updateChatGroup(groupId, request, member));
+  }
+
+  @DeleteMapping("/{groupId}")
+  public ResponseEntity<?> deleteGroup(@PathVariable Long groupId, @AuthenticationPrincipal Member member) {
+    return ResponseEntity.ok(chatGroupService.deleteChatGroup(groupId, member));
   }
 }

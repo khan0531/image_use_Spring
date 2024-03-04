@@ -46,6 +46,8 @@ public class ChatGroupDto {
 
     private Long adminId;
 
+    private boolean isActivated;
+
     public static Response fromEntity(ChatGroupEntity chatGroupEntity) {
       return Response.builder()
           .id(chatGroupEntity.getId())
@@ -55,6 +57,7 @@ public class ChatGroupDto {
           .startAt(chatGroupEntity.getStartAt())
           .endAt(chatGroupEntity.getEndAt())
           .adminId(chatGroupEntity.getAdmin().getId())
+          .isActivated(chatGroupEntity.isActivated())
           .build();
     }
 
