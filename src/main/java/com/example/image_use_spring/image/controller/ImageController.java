@@ -1,16 +1,13 @@
 package com.example.image_use_spring.image.controller;
 
-import com.example.image_use_spring.image.dto.ImagePathResponseDto;
 import com.example.image_use_spring.image.dto.OcrResultDto;
 import com.example.image_use_spring.image.service.ImageService;
 import com.example.image_use_spring.member.domain.Member;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
@@ -68,11 +65,11 @@ public class ImageController {
 
   @PostMapping("/callback")
   public ResponseEntity<String> handleCallback(@RequestBody Map<String, Object> callbackData) {
-    return ResponseEntity.ok("");
+    return ResponseEntity.ok("Callback received");
   }
 
   @GetMapping("/{imageFileName}")
-  public ResponseEntity<Resource> getImageUrl(
+  public ResponseEntity<Resource> getImage(
       @PathVariable String imageFileName,
       @AuthenticationPrincipal Member member) {
 

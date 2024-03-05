@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '2.7.17'
     id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+    id "com.ewerk.gradle.plugins.querydsl" version "1.0.10"
 }
 
 group = 'com.example'
@@ -59,7 +60,10 @@ dependencies {
 
     // azure ocr
     implementation 'com.azure:azure-ai-formrecognizer:3.1.0'
-//    implementation 'com.microsoft.azure:azure-cognitiveservices-vision-computervision:1.0.0-beta.5'
+
+    // querydsl
+    implementation 'com.querydsl:querydsl-jpa'
+    implementation 'com.querydsl:querydsl-apt'
 
     // database
     runtimeOnly 'com.mysql:mysql-connector-j'
@@ -70,6 +74,26 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+// Querydsl 소스 생성을 위한 설정
+def querydslDir = 'src/main/generated'
+
+querydsl {
+    jpa = true
+    querydslSourcesDir = querydslDir
+}
+
+sourceSets {
+    main.java.srcDir querydslDir
+}
+
+configurations {
+    querydsl.extendsFrom compileClasspath
+}
+
+compileQuerydsl {
+    options.annotationProcessorPath = configurations.querydsl
 }
 
 tasks.named('test') {

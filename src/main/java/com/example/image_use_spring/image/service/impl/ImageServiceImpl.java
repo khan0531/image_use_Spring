@@ -179,7 +179,7 @@ public class ImageServiceImpl implements ImageService {
             imagesDirectory.resolve("originals").resolve(originalFileName));
         return saveImageEntity(callbackUrl, originalFilePath, originalFileName, null, member);
       } catch (Exception e) {
-        log.error("Failed to save original image.", e);
+        log.error("Failed to save original image.", e.getMessage());
         throw new ImageException(INTERNAL_SERVER_ERROR);
       }
     });
@@ -194,7 +194,7 @@ public class ImageServiceImpl implements ImageService {
             imagesDirectory.resolve("compresses").resolve(compressedFileName));
         return saveImageEntity(callbackUrl, compressedFilePath, compressedFileName, originalImage, member);
       } catch (Exception e) {
-        log.error("Failed to compress and save image.", e);
+        log.error("Failed to compress and save image.", e.getMessage());
         throw new ImageException(INTERNAL_SERVER_ERROR);
       }
     });
@@ -209,7 +209,7 @@ public class ImageServiceImpl implements ImageService {
             imagesDirectory.resolve("thumbnails").resolve(thumbnailFileName));
         return saveImageEntity(callbackUrl, thumbnailFilePath, thumbnailFileName, originalImage, member);
       } catch (Exception e) {
-        log.error("Failed to create thumbnail and save image.", e);
+        log.error("Failed to create thumbnail and save image.", e.getMessage());
         throw new ImageException(INTERNAL_SERVER_ERROR);
       }
     });
