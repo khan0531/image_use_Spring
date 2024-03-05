@@ -4,7 +4,6 @@ import static com.example.image_use_spring.exception.type.ErrorCode.EMAIL_SEND_F
 
 import com.example.image_use_spring.exception.EmailException;
 import javax.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -20,7 +19,7 @@ import software.amazon.awssdk.services.ses.model.SendEmailRequest;
 
 @Slf4j
 @Service
-public class SimpleEmailService {
+public class AwsSimpleEmailService {
 
   @Value("${aws.ses.access-key}")
   private String accessKey;
@@ -31,7 +30,7 @@ public class SimpleEmailService {
   private SesClient sesClient;
 
   @PostConstruct
-  private void SimpleEmailService() {
+  private void AwsSimpleEmailService() {
     AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accessKey, secretKey);
     sesClient = SesClient.builder()
         .credentialsProvider(StaticCredentialsProvider.create(awsCreds))

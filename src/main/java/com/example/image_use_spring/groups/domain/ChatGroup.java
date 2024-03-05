@@ -39,7 +39,7 @@ public class ChatGroup {
 
   private boolean isActivated;
 
-  public ChatGroup setActivatedChainable(boolean activated) {
+  public ChatGroup updateChatGroupStatus(boolean activated) {
     setActivated(activated);
     return this;
   }
@@ -95,26 +95,26 @@ public class ChatGroup {
 
   public ChatGroup update(ChatGroupDto.Request request) {
     if (request.getName() != null) {
-      this.name = request.getName();
+      name = request.getName();
     }
     if (request.getDescription() != null) {
-      this.description = request.getDescription();
+      description = request.getDescription();
     }
     if (request.getMaxMembers() != null) {
-      this.maxMembers = request.getMaxMembers();
+      maxMembers = request.getMaxMembers();
     }
     if (request.getStartAt() != null) {
-      this.startAt = request.getStartAt();
+      startAt = request.getStartAt();
     }
     if (request.getEndAt() != null) {
-      this.endAt = request.getEndAt();
+      endAt = request.getEndAt();
     }
     return this;
   }
 
-  public ChatGroup updateInviteLink(String inviteLink) {
-    this.inviteLink = inviteLink;
-    this.linkExpiredAt = LocalDateTime.now().plusMinutes(30);
+  public ChatGroup updateInviteLink(String newInviteLink) {
+    inviteLink = newInviteLink;
+    linkExpiredAt = LocalDateTime.now().plusMinutes(30);
     return this;
   }
 }

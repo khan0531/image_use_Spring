@@ -61,4 +61,6 @@ public class GroupController {
     List<Message> messages = chatGroupService.getMessages(groupId, member);
     return ResponseEntity.ok(messages);
   }
+
+  //TODO: 그룹 나가기, 그룹 멤버 추방,
 }

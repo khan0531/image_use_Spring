@@ -3,41 +3,29 @@ package com.example.image_use_spring.member.service.Impl;
 import static com.example.image_use_spring.exception.type.ErrorCode.MEMBER_ALREADY_EXIST;
 import static com.example.image_use_spring.exception.type.ErrorCode.MEMBER_NOT_AUTHORIZED;
 import static com.example.image_use_spring.exception.type.ErrorCode.MEMBER_NOT_FOUND;
-import static com.example.image_use_spring.exception.type.ErrorCode.MEMBER_NOT_MATCH;
 import static com.example.image_use_spring.exception.type.ErrorCode.MEMBER_VERIFICATION_NOT_ACTIVE;
 import static com.example.image_use_spring.exception.type.ErrorCode.MEMBER_VERIFICATION_NOT_REQUEST;
 
-import com.example.image_use_spring.common.SimpleEmailService;
+import com.example.image_use_spring.common.AwsSimpleEmailService;
 import com.example.image_use_spring.exception.MemberException;
-import com.example.image_use_spring.exception.type.ErrorCode;
-import com.example.image_use_spring.image.persist.repository.ImageRepository;
 import com.example.image_use_spring.member.domain.Member;
 import com.example.image_use_spring.member.dto.EmailCodeVerifyRequestDto;
 import com.example.image_use_spring.member.dto.EmailSignInRequestDto;
 import com.example.image_use_spring.member.dto.EmailSignUpDto;
 import com.example.image_use_spring.member.persist.entity.MemberEntity;
-import com.example.image_use_spring.member.persist.entity.PasswordReset;
 import com.example.image_use_spring.member.persist.entity.VerificationCode;
 import com.example.image_use_spring.member.persist.repository.MemberRepository;
-import com.example.image_use_spring.member.persist.repository.PasswordResetRepository;
 import com.example.image_use_spring.member.persist.repository.VerificationCodeRepository;
 import com.example.image_use_spring.member.security.TokenProvider;
 import com.example.image_use_spring.member.service.MemberService;
 import com.example.image_use_spring.member.util.MemberUtil;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -55,7 +43,7 @@ public class MemberServiceImpl implements MemberService {
 
   private final VerificationCodeRepository verificationCodeRepository;
 
-  private final SimpleEmailService simpleEmailService;
+  private final AwsSimpleEmailService awsSimpleEmailService;
   private final MemberUtil memberUtil;
 
   @Value("${spring.profiles.active}")
@@ -113,7 +101,7 @@ public class MemberServiceImpl implements MemberService {
   public String sendEmailVerificationCode(String email) {
     String code = memberUtil.verificationCodeGenerator();
 
-    simpleEmailService.sendEmail(email, "이메일 가입 인증 코드입니다.", code);
+    awsSimpleEmailService.sendEmail(email, "이메일 가입 인증 코드입니다.", code);
 
     VerificationCode verificationCode =
         new VerificationCode()
