@@ -48,6 +48,15 @@ public class GlobalExceptionHandler {
         .build();
   }
 
+  @ExceptionHandler(MessageException.class)
+  public ErrorResponse handleMessageException(MessageException e) {
+    log.error("handleMessageException", e);
+    return ErrorResponse.builder()
+        .errorCode(e.getErrorCode())
+        .errorMessage(e.getErrorMessage())
+        .build();
+  }
+
   @ExceptionHandler(Exception.class)
   public ErrorResponse handleException(Exception e) {
     log.error("Exception", e);

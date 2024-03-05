@@ -3,11 +3,13 @@ package com.example.image_use_spring.member.service.Impl;
 import static com.example.image_use_spring.exception.type.ErrorCode.MEMBER_ALREADY_EXIST;
 import static com.example.image_use_spring.exception.type.ErrorCode.MEMBER_NOT_AUTHORIZED;
 import static com.example.image_use_spring.exception.type.ErrorCode.MEMBER_NOT_FOUND;
+import static com.example.image_use_spring.exception.type.ErrorCode.MEMBER_PASSWORD_NOT_MATCH;
 import static com.example.image_use_spring.exception.type.ErrorCode.MEMBER_VERIFICATION_NOT_ACTIVE;
 import static com.example.image_use_spring.exception.type.ErrorCode.MEMBER_VERIFICATION_NOT_REQUEST;
 
 import com.example.image_use_spring.common.AwsSimpleEmailService;
 import com.example.image_use_spring.exception.MemberException;
+import com.example.image_use_spring.exception.type.ErrorCode;
 import com.example.image_use_spring.member.domain.Member;
 import com.example.image_use_spring.member.dto.EmailCodeVerifyRequestDto;
 import com.example.image_use_spring.member.dto.EmailSignInRequestDto;
@@ -18,8 +20,8 @@ import com.example.image_use_spring.member.persist.repository.MemberRepository;
 import com.example.image_use_spring.member.persist.repository.VerificationCodeRepository;
 import com.example.image_use_spring.member.security.TokenProvider;
 import com.example.image_use_spring.member.service.MemberService;
-import com.example.image_use_spring.member.util.MemberUtil;
 import java.util.Objects;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
@@ -44,7 +46,6 @@ public class MemberServiceImpl implements MemberService {
   private final VerificationCodeRepository verificationCodeRepository;
 
   private final AwsSimpleEmailService awsSimpleEmailService;
-  private final MemberUtil memberUtil;
 
   @Value("${spring.profiles.active}")
   private String activeProfile;
@@ -61,9 +62,10 @@ public class MemberServiceImpl implements MemberService {
         .orElseThrow(() -> new UsernameNotFoundException("가입된 이메일이 아닙니다. -> " + email));
   }
 
+  @Override
   public EmailSignUpDto.Response signUpWithEmail(EmailSignUpDto.Request memberSignUpRequest) {
 
-    this.memberRepository.findByEmail(memberSignUpRequest.getEmail()).ifPresent(member -> {
+    memberRepository.findByEmail(memberSignUpRequest.getEmail()).ifPresent(member -> {
       throw new MemberException(MEMBER_ALREADY_EXIST);
     });
 
@@ -86,7 +88,7 @@ public class MemberServiceImpl implements MemberService {
   public void signInWithEmail(EmailSignInRequestDto emailSignInRequestDto) {
     Member member = (Member) loadUserByUsername(emailSignInRequestDto.getEmail());
     if (!passwordEncoder.matches(emailSignInRequestDto.getPassword(), member.getPassword())) {
-      throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+      throw new MemberException(MEMBER_PASSWORD_NOT_MATCH);
     }
 
     HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder
@@ -94,12 +96,14 @@ public class MemberServiceImpl implements MemberService {
 
     String accessToken = tokenProvider.generateAccessToken(member);
     String refreshToken = tokenProvider.generateRefreshToken();
+    member.setRefreshToken(refreshToken);
+    memberRepository.save(member.toEntity());
 
     tokenProvider.sendAccessAndRefreshToken(response, accessToken, refreshToken);
   }
 
   public String sendEmailVerificationCode(String email) {
-    String code = memberUtil.verificationCodeGenerator();
+    String code = verificationCodeGenerator();
 
     awsSimpleEmailService.sendEmail(email, "이메일 가입 인증 코드입니다.", code);
 
@@ -145,4 +149,9 @@ public class MemberServiceImpl implements MemberService {
         ()->new MemberException(MEMBER_NOT_FOUND));
   }
 
+  private String verificationCodeGenerator() {
+    Random random = new Random();
+    int verificationCode = 100000 + random.nextInt(900000);
+    return String.valueOf(verificationCode);
+  }
 }

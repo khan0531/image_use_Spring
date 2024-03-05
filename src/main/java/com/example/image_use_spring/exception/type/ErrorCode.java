@@ -19,6 +19,8 @@ public enum ErrorCode {
   MEMBER_VERIFICATION_NOT_ACTIVE("Member 인증이 되지 않았습니다."),
   MEMBER_VERIFICATION_CODE_NOT_VALID("유효하지 않은 Member 인증 코드입니다."),
   MEMBER_NOT_EXIST("존재하지 않는 Member입니다."),
+  MEMBER_PASSWORD_NOT_MATCH("비밀번호가 일치하지 않습니다."),
+  MEMBER_RFTOKEN_NOT_FOUND("Refresh Token을 찾을 수 없습니다."),
 
   /**
    * Image
@@ -50,6 +52,11 @@ public enum ErrorCode {
    * Email
    */
   EMAIL_SEND_FAILED("이메일 전송에 실패했습니다.");
+
+  /**
+   * Message
+   */
+
 
   private final String description;
 }

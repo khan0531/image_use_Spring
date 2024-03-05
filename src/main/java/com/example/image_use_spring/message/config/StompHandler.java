@@ -1,5 +1,11 @@
 package com.example.image_use_spring.message.config;
 
+import static com.example.image_use_spring.exception.type.ErrorCode.GROUP_NOT_FOUND;
+import static com.example.image_use_spring.exception.type.ErrorCode.MEMBER_NOT_FOUND;
+
+import com.example.image_use_spring.exception.GroupException;
+import com.example.image_use_spring.exception.MemberException;
+import com.example.image_use_spring.exception.type.ErrorCode;
 import com.example.image_use_spring.groups.persist.entity.ChatGroupEntity;
 import com.example.image_use_spring.groups.persist.repository.ChatGroupRepository;
 import com.example.image_use_spring.groups.persist.repository.MemberGroupRepository;
@@ -39,9 +45,9 @@ public class StompHandler implements ChannelInterceptor {
       String destination = accessor.getDestination();
       Long groupId = Long.parseLong(destination.substring(destination.lastIndexOf("/") + 1));
       ChatGroupEntity challengeGroupEntity = chatGroupRepository.findById(groupId)
-          .orElseThrow(() -> new IllegalArgumentException("그룹이 존재하지 않습니다."));
+          .orElseThrow(() -> new GroupException(GROUP_NOT_FOUND));
       MemberEntity memberEntity = memberRepository.findByEmail(email)
-          .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
+          .orElseThrow(() -> new MemberException(MEMBER_NOT_FOUND));
       if (!memberGroupRepository.existsByMemberAndChatGroup(memberEntity,
           challengeGroupEntity)) {
         throw new AccessDeniedException("그룹에 속해 있지 않습니다.");

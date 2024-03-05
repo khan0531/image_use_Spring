@@ -1,6 +1,10 @@
 package com.example.image_use_spring.member.security;
 
 
+import static com.example.image_use_spring.exception.type.ErrorCode.MEMBER_RFTOKEN_NOT_FOUND;
+
+import com.example.image_use_spring.exception.MemberException;
+import com.example.image_use_spring.exception.type.ErrorCode;
 import com.example.image_use_spring.member.domain.Member;
 import com.example.image_use_spring.member.persist.entity.MemberEntity;
 import com.example.image_use_spring.member.persist.repository.MemberRepository;
@@ -33,61 +37,60 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
+    try {
+      Optional<String> accessTokenOpt = tokenProvider.extractAccessToken(request)
+          .filter(tokenProvider::validateToken);
 
-    Optional<String> accessTokenOpt = tokenProvider.extractAccessToken(request)
-        .filter(tokenProvider::validateToken);
-
-    if (accessTokenOpt.isPresent()) {
-      String accessToken = accessTokenOpt.get();
-      Authentication auth = getAuthentication(accessToken);
-      SecurityContextHolder.getContext().setAuthentication(auth);
-      filterChain.doFilter(request, response);
-    } else {
-      String refreshToken = tokenProvider.extractRefreshToken(request)
-          .filter(tokenProvider::validateToken)
-          .orElse(null);
-
-      if (refreshToken != null) {
-        Optional<MemberEntity> optionalMemberEntity = memberRepository.findByRefreshToken(refreshToken);
-        if (optionalMemberEntity.isPresent()) {
-          Member member = Member.fromEntity(optionalMemberEntity.get());
-          reIssueRefreshToken(member);
-          String newAccessToken = tokenProvider.generateAccessToken(member);
-          Authentication newAuth = getAuthentication(newAccessToken);
-          SecurityContextHolder.getContext().setAuthentication(newAuth);
-        }
-        filterChain.doFilter(request, response);
+      if (accessTokenOpt.isPresent()) {
+        processAuthentication(accessTokenOpt.get(), request, response, filterChain);
       } else {
-        filterChain.doFilter(request, response);
+        String refreshToken = tokenProvider.extractRefreshToken(request)
+            .filter(tokenProvider::validateToken)
+            .orElse(null);
+
+        if (refreshToken != null) {
+          checkRefreshTokenAndReIssueAccessToken(response, refreshToken);
+          filterChain.doFilter(request, response);
+        } else {
+          filterChain.doFilter(request, response);
+        }
       }
+    } catch (Exception e) {
+      log.error("Security exception for user {} - {}", e.getMessage(), request.getRequestURI(), e);
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     }
   }
 
-  public Authentication getAuthentication(String jwt) {
-    UserDetails userDetails = memberService.loadUserByUsername(tokenProvider.getUsername(jwt));
+  private void processAuthentication(String accessToken, HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
+    Authentication auth = getAuthentication(accessToken);
+    SecurityContextHolder.getContext().setAuthentication(auth);
+    filterChain.doFilter(request, response);
+  }
 
+  private Authentication getAuthentication(String jwt) {
+    UserDetails userDetails = memberService.loadUserByUsername(tokenProvider.getUsername(jwt));
+    log.debug("Setting security context for user '{}'", userDetails.getUsername());
     return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
   }
 
-  private String reIssueRefreshToken(Member member) {
+  private void reIssueRefreshToken(Member member) {
     String reIssuedRefreshToken = tokenProvider.generateRefreshToken();
     member.updateRefreshToken(reIssuedRefreshToken);
-    memberRepository.saveAndFlush(member.toEntity());
-    return reIssuedRefreshToken;
+    memberRepository.save(member.toEntity());
   }
 
-//  public String checkRefreshTokenAndReIssueAccessToken(HttpServletResponse response, String refreshToken) {
-//    AtomicReference<String> newRefreshTokenRef = new AtomicReference<>();
-//
-//    memberRepository.findByRefreshToken(refreshToken)
-//        .ifPresent(memberEntity -> {
-//          Member member = Member.fromEntity(memberEntity);
-//          String reIssuedRefreshToken = reIssueRefreshToken(member);
-//          tokenProvider.sendAccessAndRefreshToken(response, tokenProvider.generateAccessToken(member),
-//              reIssuedRefreshToken);
-//          newRefreshTokenRef.set(reIssuedRefreshToken);
-//        });
-//
-//    return newRefreshTokenRef.get();
-//  }
+  private String checkRefreshTokenAndReIssueAccessToken(HttpServletResponse response, String refreshToken) {
+    return memberRepository.findByRefreshToken(refreshToken)
+        .map(memberEntity -> {
+          Member member = Member.fromEntity(memberEntity);
+          reIssueRefreshToken(member);
+          String newAccessToken = tokenProvider.generateAccessToken(member);
+
+          Authentication newAuth = getAuthentication(newAccessToken);
+          SecurityContextHolder.getContext().setAuthentication(newAuth);
+
+          tokenProvider.sendAccessAndRefreshToken(response, newAccessToken, member.getRefreshToken());
+          return member.getRefreshToken();
+        }).orElseThrow(() -> new MemberException(MEMBER_RFTOKEN_NOT_FOUND));
+  }
 }

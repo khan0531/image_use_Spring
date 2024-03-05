@@ -49,7 +49,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         .antMatchers("/h2-console/**").permitAll()
         .antMatchers("/", "/member/sign-up/**", "/member/email-auth", "/member/find-password/**",
             "/member/reset/password", "/member/find/password").permitAll()
-        .antMatchers("/member/sign-up/**", "/member/sign-in/**", "/member/login/**").permitAll()
+        .antMatchers("/member/sign-up/**", "/member/sign-in/**").permitAll()
         .antMatchers("/member/email-verifications/**", "/member/reset-password/**").permitAll()
         .antMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-resources/**").permitAll()
         .antMatchers("/ws/**").permitAll()

@@ -87,6 +87,7 @@ public class TokenProvider {
 
       return !claims.getBody().getExpiration().before(new Date());
     } catch (Exception e) {
+      log.error("토큰 검증 실패: {}", e.getMessage());
       return false;
     }
   }
