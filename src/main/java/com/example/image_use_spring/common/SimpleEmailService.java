@@ -1,5 +1,8 @@
 package com.example.image_use_spring.common;
 
+import static com.example.image_use_spring.exception.type.ErrorCode.EMAIL_SEND_FAILED;
+
+import com.example.image_use_spring.exception.EmailException;
 import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,10 +24,10 @@ public class SimpleEmailService {
 
   @Value("${aws.ses.access-key}")
   private String accessKey;
-
   @Value("${aws.ses.secret-key}")
   private String secretKey;
-
+  @Value("${aws.ses.sender-email}")
+  private String SENDER_EMAIL;
   private SesClient sesClient;
 
   @PostConstruct
@@ -35,7 +38,6 @@ public class SimpleEmailService {
         .region(Region.AP_NORTHEAST_2)
         .build();
   }
-
 
   public void sendEmail(String to, String subject, String body) {
     SendEmailRequest request = SendEmailRequest.builder()
@@ -54,12 +56,13 @@ public class SimpleEmailService {
                     .build())
                 .build())
             .build())
-        .source("rudgksdl94@gmail.com")
+        .source(SENDER_EMAIL)
         .build();
     try {
       sesClient.sendEmail(request);
     }catch (Exception e) {
       log.info("error: {}", e.getMessage());
+      throw new EmailException(EMAIL_SEND_FAILED);
     }
   }
 }

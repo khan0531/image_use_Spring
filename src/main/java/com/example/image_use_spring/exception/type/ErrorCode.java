@@ -44,8 +44,12 @@ public enum ErrorCode {
   GROUP_NOT_MEMBER("해당하는 Member가 Group에 속해있지 않습니다."),
   GROUP_NOT_ADMIN("해당하는 Member가 Group의 admin이 아닙니다. 수정 권한이 없습니다."),
   GROUP_NOT_MEMBER_VERIFICATION("해당하는 Member가 Group의 Member가 아닙니다."),
-  GROUP_FULL("Group의 정원이 꽉 찼습니다."),;
+  GROUP_FULL("Group의 정원이 꽉 찼습니다."),
 
+  /**
+   * Email
+   */
+  EMAIL_SEND_FAILED("이메일 전송에 실패했습니다.");
 
   private final String description;
 }

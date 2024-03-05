@@ -39,6 +39,15 @@ public class GlobalExceptionHandler {
         .build();
   }
 
+  @ExceptionHandler(EmailException.class)
+  public ErrorResponse handleEmailException(EmailException e) {
+    log.error("handleEmailException", e);
+    return ErrorResponse.builder()
+        .errorCode(e.getErrorCode())
+        .errorMessage(e.getErrorMessage())
+        .build();
+  }
+
   @ExceptionHandler(Exception.class)
   public ErrorResponse handleException(Exception e) {
     log.error("Exception", e);

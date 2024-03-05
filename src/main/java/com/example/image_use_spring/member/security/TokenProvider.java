@@ -26,12 +26,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class TokenProvider {
 
-  public static final String ACCESS_TOKEN_HEADER = "Authorization";
-  public static final String TOKEN_PREFIX = "Bearer ";
-  private static final String REFRESH_TOKEN_HEADER = "Authorization-refresh";
-  
-  private final MemberRepository memberRepository;
-
   @Value("${jwt.secretKey}")
   private String secretKey;
 
@@ -44,10 +38,10 @@ public class TokenProvider {
   private JwtParser jwtParser;
 
   private synchronized JwtParser getJwtParser() {
-    if (this.jwtParser == null) {
-      this.jwtParser = Jwts.parser().setSigningKey(this.secretKey);
+    if (jwtParser == null) {
+      jwtParser = Jwts.parser().setSigningKey(this.secretKey);
     }
-    return this.jwtParser;
+    return jwtParser;
   }
 
   private String generateAccessToken(String email) {
@@ -60,7 +54,7 @@ public class TokenProvider {
         .setClaims(claims)
         .setIssuedAt(now)
         .setExpiration(expireDate)
-        .signWith(SignatureAlgorithm.HS512, this.secretKey) // 사용할 암호화 알고리즘, 비밀키
+        .signWith(SignatureAlgorithm.HS512, secretKey) // 사용할 암호화 알고리즘, 비밀키
         .compact();
   }
 
@@ -78,7 +72,7 @@ public class TokenProvider {
     // jwt 발급
     return Jwts.builder()
         .setExpiration(expireDate)
-        .signWith(SignatureAlgorithm.HS512, this.secretKey)
+        .signWith(SignatureAlgorithm.HS512, secretKey)
         .compact();
   }
 
