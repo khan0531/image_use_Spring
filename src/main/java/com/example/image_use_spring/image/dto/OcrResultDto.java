@@ -1,6 +1,7 @@
 package com.example.image_use_spring.image.dto;
 
 import com.example.image_use_spring.image.persist.entity.OcrResultEntity;
+import java.time.LocalDateTime;
 import lombok.*;
 
 @Getter
@@ -9,8 +10,8 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class OcrResultDto {
-  private String ocrDate;
-  private Long ocrAmount;
+  private LocalDateTime ocrDate;
+  private float ocrAmount;
   private String ocrVendor;
   private String ocrAddress;
 

@@ -53,23 +53,13 @@ public class MemberServiceImpl implements MemberService {
   private final PasswordEncoder passwordEncoder;
   private final TokenProvider tokenProvider;
 
-  private final ImageRepository imageRepository;
   private final VerificationCodeRepository verificationCodeRepository;
-  private final PasswordResetRepository passwordResetRepository;
 
   private final SimpleEmailService simpleEmailService;
   private final MemberUtil memberUtil;
 
   @Value("${spring.profiles.active}")
   private String activeProfile;
-
-  private final static String[] categoryNames = {
-      "가전/가구", "가전생활/서비스", "교육/학원", "미용",
-      "스포츠/문화/레저", "여행/교통", "요식/유흥", "유통",
-      "음/식료품", "의료", "의류/잡화", "자동차",
-      "전자상거래", "주유"
-  };
-
   @Override
   public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
     return memberRepository.findByEmail(email)

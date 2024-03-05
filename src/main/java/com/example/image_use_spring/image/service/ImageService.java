@@ -11,7 +11,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface ImageService {
 
-  CompletableFuture<Void> uploadFile(MultipartFile file, String callbackUrl, String checkStatus, Member member, boolean isReceipt) throws IOException;
+  CompletableFuture<Void> uploadFile(MultipartFile file, String callbackUrl, String checkStatus, Member member) throws IOException;
+
+  void performOcrAnalysisAsync(MultipartFile file) throws Exception;
 
   String getTaskStatus(String uuid);
 

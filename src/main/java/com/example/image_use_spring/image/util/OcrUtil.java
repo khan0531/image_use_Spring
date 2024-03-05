@@ -1,88 +1,94 @@
 package com.example.image_use_spring.image.util;
 
-import org.json.JSONObject;
+import com.azure.ai.formrecognizer.FormRecognizerClient;
+import com.azure.ai.formrecognizer.FormRecognizerClientBuilder;
+import com.azure.ai.formrecognizer.models.RecognizedForm;
+import com.azure.core.credential.AzureKeyCredential;
+import com.example.image_use_spring.image.dto.OcrResult;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class OcrUtil {
-  @Value("${azure.ocr.endpoint}")
+  @Value("${azure.formrecognizer.endpoint}")
   private String AZURE_OCR_ENDPOINT;
-  @Value("${azure.ocr.key}")
+
+  @Value("${azure.formrecognizer.apikey}")
   private String AZURE_OCR_KEY;
-  private final String MODEL_ID = "prebuilt-receipt";
 
-  public String startDocumentAnalysis(MultipartFile file) throws Exception {
-    RestTemplate restTemplate = new RestTemplate();
+  public OcrResult analyzeReceipt(MultipartFile file) throws IOException {
+    // FormRecognizerClient 생성
+    FormRecognizerClient client = new FormRecognizerClientBuilder()
+        .credential(new AzureKeyCredential(AZURE_OCR_KEY))
+        .endpoint(AZURE_OCR_ENDPOINT)
+        .buildClient();
 
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.MULTIPART_FORM_DATA); // 멀티파트 데이터 타입으로 변경
-    headers.add("Ocp-Apim-Subscription-Key", AZURE_OCR_KEY);
+    var poller = client.beginRecognizeReceipts(file.getInputStream(), file.getSize(), null, null);
+    List<RecognizedForm> recognizedForms  = poller.getFinalResult();
 
-    // 멀티파트 파일을 ByteArrayResource로 변환
-    ByteArrayResource fileResource = new ByteArrayResource(file.getBytes()) {
-      @Override
-      public String getFilename() {
-        return file.getOriginalFilename(); // 파일 이름을 가져옴
+    RecognizedForm form = recognizedForms.get(0);
+    OcrResult ocrResult = new OcrResult();
+    StringBuilder dateTimeBuilder = new StringBuilder();
+
+    form.getFields().forEach((fieldName, formField) -> {
+      log.info("Field: {}, Value: {}", fieldName, formField.getValueData() == null ? "null" : formField.getValueData().getText());
+
+      if (formField.getValue() != null) {
+        switch (fieldName) {
+          case "Total":
+            if (formField.getValue().asFloat() != null) {
+              ocrResult.setOcrAmount(formField.getValue().asFloat());
+            }
+            break;
+          case "MerchantName":
+            if (formField.getValue().asString() != null) {
+              ocrResult.setOcrVendor(formField.getValue().asString());
+            }
+            break;
+          case "TransactionDate":
+            if (formField.getValue().asDate() != null) {
+              String dateString = formField.getValue().asDate()
+                  .format(DateTimeFormatter.ISO_LOCAL_DATE);
+              dateTimeBuilder.append(dateString);
+            }
+            break;
+          case"TransactionTime":
+            if (formField.getValue().asTime() != null) {
+              String timeString = formField.getValue().asTime()
+                  .format(DateTimeFormatter.ISO_LOCAL_TIME);
+              dateTimeBuilder.append(timeString);
+            }
+          break;
+        }
       }
-    };
+    });
 
-    // 멀티파트 바디 생성
-    MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-    body.add("file", fileResource);
+    if (dateTimeBuilder.length() > 0) {
+      String dateTime = dateTimeBuilder.toString();
+      String numericDate = dateTime.replaceAll("[^\\d]", "");
 
-    HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<>(body, headers);
+      // 숫자로만 구성된 날짜와 시간 형식을 정의
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
-    ResponseEntity<String> response = restTemplate.postForEntity(
-        AZURE_OCR_ENDPOINT + "/formrecognizer/documentModels/" + MODEL_ID
-            + ":analyze?api-version=2023-07-31",
-        entity,
-        String.class);
-
-    return response.getHeaders().get("Operation-Location").get(0);
-  }
-
-  public String getDocumentAnalysisResult(String operationLocation) throws Exception {
-    RestTemplate restTemplate = new RestTemplate();
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.add("Ocp-Apim-Subscription-Key", AZURE_OCR_KEY);
-    headers.add("Host", "koreacentral.api.cognitive.microsoft.com");
-
-    HttpEntity<String> entity = new HttpEntity<>(headers);
-
-    while (true) {
-      ResponseEntity<String> response = restTemplate.exchange(
-          operationLocation,
-          HttpMethod.GET,
-          entity,
-          String.class);
-
-      JSONObject jsonResponse = new JSONObject(response.getBody());
-      String status = jsonResponse.getString("status");
-
-      if ("succeeded".equals(status)) {
-        return jsonResponse.toString();
-      } else if ("failed".equals(status)) {
-        throw new RuntimeException("Analysis failed");
+      // 문자열을 LocalDateTime 객체로 변환
+      try {
+        LocalDateTime localDateTime = LocalDateTime.parse(numericDate, formatter);
+        ocrResult.setOcrDate(localDateTime);
+      } catch (Exception e) {
+        log.error("DateTime parsing error", e.getMessage());
       }
-
-      System.out.println("Waiting for analysis result...");
-
-      Thread.sleep(2000);
     }
+
+    return ocrResult;
   }
 }
 

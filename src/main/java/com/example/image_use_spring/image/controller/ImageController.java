@@ -40,16 +40,17 @@ public class ImageController {
       @RequestPart("receipt") String receipt,
       @RequestParam("callbackUrl") String callbackUrl,
       @AuthenticationPrincipal Member member
-  ) throws IOException {
+  ) throws Exception {
     String checkStatus = UUID.randomUUID().toString().replace("-", "");
+    // 비동기 작업 시작
+
+    imageService.uploadFile(file, callbackUrl, checkStatus, member);
 
     JsonNode rootNode = objectMapper.readTree(receipt);
     boolean isReceipt = rootNode.asBoolean();
-
-    // 비동기 작업 시작
-
-    imageService.uploadFile(file, callbackUrl, checkStatus, member, isReceipt);
-
+    if (isReceipt) {
+      imageService.performOcrAnalysisAsync(file);
+    }
     // 비동기 작업이 정상적으로 시작 되었다는 응답, 비동기 작업을 추적할 수 있도록 UUID 반환
     Map<String, String> response = new HashMap<>();
     response.put("message", "Image processing started");

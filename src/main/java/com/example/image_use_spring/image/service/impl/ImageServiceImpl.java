@@ -7,7 +7,6 @@ import static com.example.image_use_spring.exception.type.ErrorCode.OCR_FAILED;
 import static com.example.image_use_spring.exception.type.ErrorCode.OCR_NOT_FOUND;
 
 import com.example.image_use_spring.exception.ImageException;
-import com.example.image_use_spring.exception.type.ErrorCode;
 import com.example.image_use_spring.image.dto.ImagePathResponseDto;
 import com.example.image_use_spring.image.dto.OcrResult;
 import com.example.image_use_spring.image.dto.OcrResultDto;
@@ -18,12 +17,9 @@ import com.example.image_use_spring.image.persist.repository.OcrResultRepository
 import com.example.image_use_spring.image.persist.repository.TaskStatusRepository;
 import com.example.image_use_spring.image.service.ImageService;
 import com.example.image_use_spring.image.util.ImageUtil;
-import com.example.image_use_spring.image.util.OcrResultExtractor;
 import com.example.image_use_spring.image.util.OcrUtil;
 import com.example.image_use_spring.member.domain.Member;
 import com.example.image_use_spring.member.service.MemberService;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -95,7 +91,7 @@ public class ImageServiceImpl implements ImageService {
   }
 
   @Override
-  public CompletableFuture<Void> uploadFile(MultipartFile file, String callbackUrl, String checkStatus, Member member, boolean isReceipt) {
+  public CompletableFuture<Void> uploadFile(MultipartFile file, String callbackUrl, String checkStatus, Member member) {
     memberService.validateAndGetMember(member);
 
     String uuid = UUID.randomUUID().toString().replace("-", "");
@@ -112,7 +108,7 @@ public class ImageServiceImpl implements ImageService {
 
     CompletableFuture<ImageEntity> originalImageFuture = saveOriginalImage(imageBytes, checkStatus, uuid, FilenameUtils.getExtension(file.getOriginalFilename()), member);
 
-    CompletableFuture<Void> imageProcessingFuture = originalImageFuture.thenCompose(originalImage -> {
+    return originalImageFuture.thenCompose(originalImage -> {
       CompletableFuture<ImageEntity> compressedImageFuture = compressAndSaveImage(imageBytes, checkStatus, uuid, originalImage, member);
       CompletableFuture<ImageEntity> thumbnailImageFuture = createThumbnailAndSave(imageBytes, checkStatus, uuid, originalImage, member);
       return CompletableFuture.allOf(compressedImageFuture, thumbnailImageFuture).thenRunAsync(() -> {
@@ -128,42 +124,15 @@ public class ImageServiceImpl implements ImageService {
         }
       });
     });
-
-    return imageProcessingFuture.thenRunAsync(() -> {
-      if (isReceipt) {
-        performOcrAnalysisAsync(file).exceptionally(e -> {
-          log.error("OCR processing failed.", e);
-          throw new ImageException(OCR_FAILED);
-        });
-      }
-    });
   }
 
-  private CompletableFuture<Void> performOcrAnalysisAsync(MultipartFile file) {
-    return CompletableFuture.runAsync(() -> {
-      try {
-        String operationLocation = ocrUtil.startDocumentAnalysis(file);
-        String analysisResult = ocrUtil.getDocumentAnalysisResult(operationLocation);
+  public void performOcrAnalysisAsync(MultipartFile file) throws Exception {
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode rootNode = objectMapper.readTree(analysisResult);
-        JsonNode content = rootNode.get("analyzeResult").get("content");
+    OcrResult ocrResult = ocrUtil.analyzeReceipt(file);
 
-        OcrResult ocrResult = new OcrResultExtractor().extractOcrResult(content);
-
-        log.info("OCR Date: " + ocrResult.getOcrDate());
-        log.info("OCR Amount: " + ocrResult.getOcrAmount());
-        log.info("OCR Vendor: " + ocrResult.getOcrVendor());
-        log.info("OCR Address: " + ocrResult.getOcrAddress());
-        log.info("OCR Analysis Result: " + content.toPrettyString());
-
-        ocrResultRepository.save(ocrResult.toEntity());
-        // 여기서 OCR 결과를 저장하거나 다음 단계로 전달하는 로직 추가
-      } catch (Exception e) {
-        throw new ImageException(OCR_FAILED);
-      }
-    });
+    ocrResultRepository.save(ocrResult.toEntity());
   }
+
 
   private void notifyClient(String callbackUrl, String message, ImageEntity originalImage, ImageEntity compressedImage, ImageEntity thumbnailImage) {
     // RestTemplate 인스턴스 생성
