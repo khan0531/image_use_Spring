@@ -1,0 +1,49 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  datasource:
+    url: jdbc:mysql://${DOMAIN:image-rds-instance.cbs844kg28za.ap-northeast-2.rds.amazonaws.com}:${PORT:3306}/${DATABASE_NAME:image}?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Seoul
+    username: ${YOUR_NAME:imageadmin}
+    password: ${YOUR_PASSWORD:7845120qwe!}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${client-id:710388977012-bcgqsp29fpsiqigj736lk5mh1o0pupil.apps.googleusercontent.com}
+            client-secret: ${client-secret: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}
+            scope:
+              - profile
+              - email
+  mvc:
+    path match:
+      matching-strategy: ant_path_matcher
+
+jwt:
+  secretKey: ${secretKey:SeCrEtKeY4HaShInG}
+  access:
+    expiration: ${accessTokenExpirationPeriod:3600000}
+  refresh:
+    expiration: ${refreshTokenExpirationPeriod:1209600000}
+
+aws:
+  ses:
+    access-key: ${accessKey:AKIAW3MEFMW2FSTTP3A7}
+    secret-key: ${secretKey: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}
+    sender-email: ${senderEmail:rudgksdl94@gmail.com}
+
+azure:
+  formrecognizer:
+    endpoint: ${AZURE_OCR_ENDPOINT:https://ocr-receipt.cognitiveservices.azure.com/}
+    apikey: ${AZURE_OCR_KEY:021cd052e62d43d68309d9ff678f18c2}
+
+invite:
+  link:
+    length: ${INVITE_LINK_LENGTH:10}
+    characters:
+      - ${CHARACTERS:ABCDEFGHIJKLMNOPQRSTUVWXYZ}
+      - ${CHARACTERS:abcdefghijklmnopqrstuvwxyz}
+      - ${CHARACTERS:0123456789}

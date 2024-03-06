@@ -2,11 +2,10 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '2.7.17'
     id 'io.spring.dependency-management' version '1.0.15.RELEASE'
-    id "com.ewerk.gradle.plugins.querydsl" version "1.0.10"
 }
 
 group = 'com.example'
-version = '0.0.1-SNAPSHOT'
+//version = '0.0.1-SNAPSHOT'
 
 java {
     sourceCompatibility = '11'
@@ -62,8 +61,9 @@ dependencies {
     implementation 'com.azure:azure-ai-formrecognizer:3.1.0'
 
     // querydsl
-    implementation 'com.querydsl:querydsl-jpa'
-    implementation 'com.querydsl:querydsl-apt'
+//    implementation 'com.querydsl:querydsl-jpa' // 버전을 프로젝트에 맞게 조정
+//    annotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jpa'
+
 
     // database
     runtimeOnly 'com.mysql:mysql-connector-j'
@@ -76,25 +76,20 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
-// Querydsl 소스 생성을 위한 설정
-def querydslDir = 'src/main/generated'
 
-querydsl {
-    jpa = true
-    querydslSourcesDir = querydslDir
-}
-
-sourceSets {
-    main.java.srcDir querydslDir
-}
-
-configurations {
-    querydsl.extendsFrom compileClasspath
-}
-
-compileQuerydsl {
-    options.annotationProcessorPath = configurations.querydsl
-}
+//def querydslDir = "src/main/generated"
+//querydsl {
+//    jpa = true
+//    querydslSourcesDir = querydslDir
+//}
+//sourceSets {
+//    main.java.srcDir querydslDir
+//}
+//configurations {
+//    querydsl.extendsFrom compileClasspath }
+//compileQuerydsl {
+//    options.annotationProcessorPath = configurations.querydsl
+//}
 
 tasks.named('test') {
     useJUnitPlatform()

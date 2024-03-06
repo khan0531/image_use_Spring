@@ -1,0 +1,40 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:test
+    username: sa
+    password:
+    driverClassName: org.h2.Driver
+  h2:
+    console:
+      enabled: true
+  jpa:
+    defer-datasource-initialization: true # ?? ??? ???. ??? ?? ???? ??
+    database-platform: H2
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${client-id:710388977012-bcgqsp29fpsiqigj736lk5mh1o0pupil.apps.googleusercontent.com}
+            client-secret: ${client-secret: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}
+            scope:
+              - profile
+              - email
+
+  mvc:
+    path match:
+      matching-strategy: ant_path_matcher
+
+jwt:
+  secretKey: ${secretKey:SeCrEtKeY4HaShInG}
+  access:
+    expiration: ${accessTokenExpirationPeriod:3600000}
+  refresh:
+    expiration: ${refreshTokenExpirationPeriod:1209600000}
