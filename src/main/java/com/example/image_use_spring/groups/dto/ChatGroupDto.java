@@ -7,11 +7,14 @@ import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 public class ChatGroupDto {
 
-  @Data
+  @Getter
+  @Setter
   @NoArgsConstructor
   @AllArgsConstructor
   @Builder
@@ -27,7 +30,8 @@ public class ChatGroupDto {
     private LocalDate endAt;
   }
 
-  @Data
+  @Getter
+  @Setter
   @NoArgsConstructor
   @AllArgsConstructor
   @Builder

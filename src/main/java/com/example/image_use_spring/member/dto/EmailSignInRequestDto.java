@@ -3,9 +3,12 @@ package com.example.image_use_spring.member.dto;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.Size;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 public class EmailSignInRequestDto {
 
