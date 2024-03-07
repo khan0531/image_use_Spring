@@ -10,7 +10,7 @@ spring:
       ddl-auto: create-drop
     show-sql: false
   datasource:
-    url: jdbc:mysql://${DOMAIN:ec2-54-180-100-220.ap-northeast-2.compute.amazonaws.com}:${PORT:3306}/${DATABASE_NAME:image}?
+    url: jdbc:mysql://${DOMAIN:ec2-54-180-100-220.ap-northeast-2.compute.amazonaws.com}:${PORT:3306}/${DATABASE_NAME:image}
     username: ${YOUR_NAME:testuser}
     password: ${YOUR_PASSWORD:7845120qwA!}
     driver-class-name: com.mysql.cj.jdbc.Driver
