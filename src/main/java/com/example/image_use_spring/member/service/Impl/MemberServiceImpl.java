@@ -17,7 +17,7 @@ import com.example.image_use_spring.member.dto.EmailSignUpDto;
 import com.example.image_use_spring.member.persist.entity.MemberEntity;
 import com.example.image_use_spring.member.persist.entity.VerificationCode;
 import com.example.image_use_spring.member.persist.repository.MemberRepository;
-import com.example.image_use_spring.member.persist.repository.VerificationCodeRepository;
+//import com.example.image_use_spring.member.persist.repository.VerificationCodeRepository;
 import com.example.image_use_spring.member.security.TokenProvider;
 import com.example.image_use_spring.member.service.MemberService;
 import java.util.Objects;
@@ -43,7 +43,7 @@ public class MemberServiceImpl implements MemberService {
   private final PasswordEncoder passwordEncoder;
   private final TokenProvider tokenProvider;
 
-  private final VerificationCodeRepository verificationCodeRepository;
+//  private final VerificationCodeRepository verificationCodeRepository;
 
   private final AwsSimpleEmailService awsSimpleEmailService;
 
@@ -69,14 +69,14 @@ public class MemberServiceImpl implements MemberService {
       throw new MemberException(MEMBER_ALREADY_EXIST);
     });
 
-    if ("prod".equals(activeProfile)) {
-      VerificationCode verificationCode = verificationCodeRepository.findById(memberSignUpRequest.getEmail())
-          .orElseThrow(() -> new MemberException(MEMBER_VERIFICATION_NOT_REQUEST));
-
-      if (!verificationCode.isVerified()) {
-        throw new MemberException(MEMBER_VERIFICATION_NOT_ACTIVE);
-      }
-    }
+//    if ("prod".equals(activeProfile)) {
+//      VerificationCode verificationCode = verificationCodeRepository.findById(memberSignUpRequest.getEmail())
+//          .orElseThrow(() -> new MemberException(MEMBER_VERIFICATION_NOT_REQUEST));
+//
+//      if (!verificationCode.isVerified()) {
+//        throw new MemberException(MEMBER_VERIFICATION_NOT_ACTIVE);
+//      }
+//    }
 
     Member member = Member.fromSignUpDto(memberSignUpRequest);
     member.passwordEncode(passwordEncoder);
@@ -103,34 +103,34 @@ public class MemberServiceImpl implements MemberService {
   }
 
   public String sendEmailVerificationCode(String email) {
-    String code = verificationCodeGenerator();
-
-    awsSimpleEmailService.sendEmail(email, "이메일 가입 인증 코드입니다.", code);
-
-    VerificationCode verificationCode =
-        new VerificationCode()
-        .builder()
-        .email(email)
-        .code(code)
-        .isVerified(false)
-        .build();
-    verificationCodeRepository.save(verificationCode);
+//    String code = verificationCodeGenerator();
+//
+//    awsSimpleEmailService.sendEmail(email, "이메일 가입 인증 코드입니다.", code);
+//
+//    VerificationCode verificationCode =
+//        new VerificationCode()
+//        .builder()
+//        .email(email)
+//        .code(code)
+//        .isVerified(false)
+//        .build();
+//    verificationCodeRepository.save(verificationCode);
 
     return "이메일 인증 메일을 전송했습니다.";
   }
 
   @Override
   public boolean verifyEmail(EmailCodeVerifyRequestDto requestDto) {
-    VerificationCode verificationCode = verificationCodeRepository.findById(requestDto.getEmail())
-        .orElseThrow(() -> new IllegalArgumentException("인증 코드가 존재하지 않습니다."));
-
-    if (verificationCode != null && verificationCode.getCode().equals(requestDto.getCode())) {
-      verificationCode.setVerified(true);
-      verificationCode.setTtl(TimeUnit.MINUTES.toSeconds(20));
-      verificationCodeRepository.save(verificationCode); // 인증 상태 업데이트
-
-      return true;
-    }
+//    VerificationCode verificationCode = verificationCodeRepository.findById(requestDto.getEmail())
+//        .orElseThrow(() -> new IllegalArgumentException("인증 코드가 존재하지 않습니다."));
+//
+//    if (verificationCode != null && verificationCode.getCode().equals(requestDto.getCode())) {
+//      verificationCode.setVerified(true);
+//      verificationCode.setTtl(TimeUnit.MINUTES.toSeconds(20));
+//      verificationCodeRepository.save(verificationCode); // 인증 상태 업데이트
+//
+//      return true;
+//    }
 
     return false;
   }
