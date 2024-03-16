@@ -41,6 +41,21 @@ aws:
     secret-key: ${secretKey:YOUR_SECRET_KEY}
     sender-email: ${senderEmail:YOUR_SENDER_EMAIL}
 
+cloud:
+  aws:
+    credentials:
+      accessKey: ${AWS_ACCESS_KEY_ID:your-access-key} # ?? ??? ?? ??
+      secretKey: ${AWS_SECRET_ACCESS_KEY:your-secret-key} # ?? ??? ?? ??
+    region:
+      static: ${AWS_REGION:your-region} # ?: us-east-1
+    ses:
+      access-key: ${accessKey:YOUR_ACCESS_KEY}
+      secret-key: ${secretKey:YOUR_SECRET_KEY}
+      sender-email: ${senderEmail:YOUR_SENDER_EMAIL}
+    s3:
+      bucketName: ${S3_BUCKET_NAME:your-bucket-name}
+
+
 azure:
   formrecognizer:
     endpoint: ${AZURE_OCR_ENDPOINT:https://${OCR_GROUP:YOUR_OCR_GROUP}.cognitiveservices.azure.com/}

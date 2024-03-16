@@ -17,9 +17,9 @@ public interface ImageService {
 
   String getTaskStatus(String uuid);
 
-  Resource loadImageAsResource(String imageFileName, Member member);
-
-  ImagePathResponseDto getImagePath(String uuid);
+//  Resource loadImageAsResource(String imageFileName, Member member);
 
   OcrResultDto getOcrResult(Long id);
+
+  String getImageUrl(String imageFileName, Member member);
 }

@@ -31,6 +31,7 @@ import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
@@ -40,13 +41,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ImageServiceImpl implements ImageService {
 
-  private final Path imagesDirectory = Paths.get(System.getProperty("user.home"), "test-images");
+  @Value("${app.aws.s3.bucketName}")
+  private String bucketName;
+
+  private final S3Client s3Client;
 
   private static final int THUMBNAIL_WIDTH = 512;
   private static final int THUMBNAIL_HEIGHT = 512;
@@ -68,10 +75,11 @@ public class ImageServiceImpl implements ImageService {
   }
 
   @Override
-  public ImagePathResponseDto getImagePath(String uuid) {
-    ImageEntity image = imageRepository.findByUuid(uuid)
-        .orElseThrow(() -> new ImageException(FILE_NOT_FOUND));
-    return null;
+  public String getImageUrl(String imageFileName, Member member) {
+    String imagePath = imageRepository.findByImageFileName(imageFileName)
+        .orElseThrow(() -> new ImageException(FILE_NOT_FOUND))
+        .getImagePath();
+    return imagePath;
   }
 
   @Override
@@ -85,10 +93,23 @@ public class ImageServiceImpl implements ImageService {
     }
   }
 
-  private void saveTaskStatus(String uuid, String status) {
-    TaskStatus taskStatus = new TaskStatus(uuid, status);
-    taskStatusRepository.save(taskStatus);
-  }
+//  @Override
+//  public Resource loadImageAsResource(String imageFileName, Member member) {
+//    ImageEntity image = imageRepository.findByImageFileName(imageFileName)
+//        .orElseThrow(() -> new ImageException(FILE_NOT_FOUND));
+//
+//    memberService.validateAndGetMember(image.getMember().getId(), member);
+//
+//    String imagePath = image.getImagePath();
+//
+//    Resource resource = new FileSystemResource(imagePath);
+//
+//    if (resource.exists() || resource.isReadable()) {
+//      return resource;
+//    } else {
+//      throw new ImageException(FILE_NOT_FOUND);
+//    }
+//  }
 
   @Override
   public CompletableFuture<Void> uploadFile(MultipartFile file, String callbackUrl, String checkStatus, Member member) {
@@ -133,7 +154,6 @@ public class ImageServiceImpl implements ImageService {
     ocrResultRepository.save(ocrResult.toEntity());
   }
 
-
   private void notifyClient(String callbackUrl, String message, ImageEntity originalImage, ImageEntity compressedImage, ImageEntity thumbnailImage) {
     // RestTemplate 인스턴스 생성
     RestTemplate restTemplate = new RestTemplate();
@@ -142,15 +162,11 @@ public class ImageServiceImpl implements ImageService {
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
 
-    String originalImageUrl = createImageUrl(originalImage.getImageFileName());
-    String compressedImageUrl = createImageUrl(compressedImage.getImageFileName());
-    String thumbnailImageUrl = createImageUrl(thumbnailImage.getImageFileName());
-
     Map<String, Object> body = new HashMap<>();
     body.put("message", message);
-    body.put("originalImagePath", originalImageUrl);
-    body.put("compressedImagePath", compressedImageUrl);
-    body.put("thumbnailImagePath", thumbnailImageUrl);
+    body.put("originalImagePath", originalImage.getImagePath());
+    body.put("compressedImagePath", compressedImage.getImagePath());
+    body.put("thumbnailImagePath", thumbnailImage.getImagePath());
 
     HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
@@ -159,15 +175,9 @@ public class ImageServiceImpl implements ImageService {
 
     // 클라이언트에서 어떻게 수신하는지 로깅
     log.info("Request body: " + body);
-
     log.info("Callback response: " + response.getStatusCode());
     log.info("Callback response body: " + response.getBody());
     log.info("Callback response headers: " + response.getHeaders());
-  }
-
-  // 이미지 파일 이름을 이용하여 외부에서 접근 가능한 URL 생성
-  private String createImageUrl(String imageFileName) {
-    return "https://localhost:8080/images/" + imageFileName;
   }
 
   private CompletableFuture<ImageEntity> saveOriginalImage(byte[] imageBytes, String callbackUrl, String uuid, String extension,  Member member) {
@@ -175,9 +185,9 @@ public class ImageServiceImpl implements ImageService {
     return CompletableFuture.supplyAsync(() -> {
       try {
         String originalFileName = uuid + "." + extension;
-        Path originalFilePath = imageUtil.storeFile(imageBytes,
-            imagesDirectory.resolve("originals").resolve(originalFileName));
-        return saveImageEntity(callbackUrl, originalFilePath, originalFileName, null, member);
+        String originalFileKey = "originals/" + originalFileName;
+        uploadFileToS3(imageBytes, originalFileKey, "image/" + extension);
+        return saveImageEntity(callbackUrl, getFileUrl(originalFileKey), originalFileName, null, member);
       } catch (Exception e) {
         log.error("Failed to save original image.", e.getMessage());
         throw new ImageException(INTERNAL_SERVER_ERROR);
@@ -185,14 +195,28 @@ public class ImageServiceImpl implements ImageService {
     });
   }
 
+  private String getFileUrl(String fileKey) {
+    return s3Client.utilities().getUrl(builder -> builder.bucket(bucketName).key(fileKey)).toExternalForm();
+  }
+
+  private void uploadFileToS3(byte[] fileData, String fileKey, String mimeType) {
+    PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+        .bucket(bucketName)
+        .key(fileKey)
+        .contentType(mimeType)
+        .build();
+
+    s3Client.putObject(putObjectRequest, RequestBody.fromBytes(fileData));
+  }
+
   private CompletableFuture<ImageEntity> compressAndSaveImage(byte[] imageBytes, String callbackUrl, String uuid, ImageEntity originalImage,  Member member) {
     return CompletableFuture.supplyAsync(() -> {
       try {
         byte[] compressedImage = imageUtil.compressImage(imageBytes);
         String compressedFileName = "comp-" + uuid + "." + "jpg";
-        Path compressedFilePath = imageUtil.storeFile(compressedImage,
-            imagesDirectory.resolve("compresses").resolve(compressedFileName));
-        return saveImageEntity(callbackUrl, compressedFilePath, compressedFileName, originalImage, member);
+        String compressedFileKey = "compresses/" + compressedFileName;
+        uploadFileToS3(compressedImage, compressedFileKey, "image/jpeg");
+        return saveImageEntity(callbackUrl, getFileUrl(compressedFileKey), compressedFileName, originalImage, member);
       } catch (Exception e) {
         log.error("Failed to compress and save image.", e.getMessage());
         throw new ImageException(INTERNAL_SERVER_ERROR);
@@ -205,9 +229,9 @@ public class ImageServiceImpl implements ImageService {
       try {
         byte[] thumbnailImage = imageUtil.createThumbnail(imageBytes, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT);
         String thumbnailFileName = "thumb-" + uuid + "." + "jpg";
-        Path thumbnailFilePath = imageUtil.storeFile(thumbnailImage,
-            imagesDirectory.resolve("thumbnails").resolve(thumbnailFileName));
-        return saveImageEntity(callbackUrl, thumbnailFilePath, thumbnailFileName, originalImage, member);
+        String thumbnailFileKey = "thumbnails/" + thumbnailFileName;
+        uploadFileToS3(thumbnailImage, thumbnailFileKey, "image/jpeg");
+        return saveImageEntity(callbackUrl, getFileUrl(thumbnailFileKey), thumbnailFileName, originalImage, member);
       } catch (Exception e) {
         log.error("Failed to create thumbnail and save image.", e.getMessage());
         throw new ImageException(INTERNAL_SERVER_ERROR);
@@ -215,31 +239,19 @@ public class ImageServiceImpl implements ImageService {
     });
   }
 
-  private ImageEntity saveImageEntity(String callbackUrl, Path filePath, String fileName, ImageEntity originalImage, Member member) {
+  private ImageEntity saveImageEntity(String callbackUrl, String filePath, String fileName, ImageEntity originalImage, Member member) {
     return imageRepository.save(ImageEntity.builder()
         .uuid(callbackUrl)
-        .imagePath(filePath.toString())
+        .imagePath(filePath)
         .imageFileName(fileName)
         .member(member.toEntity())
         .originalImage(originalImage)
         .build());
   }
 
-  @Override
-  public Resource loadImageAsResource(String imageFileName, Member member) {
-    ImageEntity image = imageRepository.findByImageFileName(imageFileName)
-        .orElseThrow(() -> new ImageException(FILE_NOT_FOUND));
-
-    memberService.validateAndGetMember(image.getMember().getId(), member);
-
-    String imagePath = image.getImagePath();
-
-    Resource resource = new FileSystemResource(imagePath);
-
-    if (resource.exists() || resource.isReadable()) {
-      return resource;
-    } else {
-      throw new ImageException(FILE_NOT_FOUND);
-    }
+  private void saveTaskStatus(String uuid, String status) {
+    TaskStatus taskStatus = new TaskStatus(uuid, status);
+    taskStatusRepository.save(taskStatus);
   }
+
 }

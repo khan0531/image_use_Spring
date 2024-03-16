@@ -21,11 +21,11 @@ import software.amazon.awssdk.services.ses.model.SendEmailRequest;
 @Service
 public class AwsSimpleEmailService {
 
-  @Value("${aws.ses.access-key}")
+  @Value("${cloud.aws.ses.access-key}")
   private String accessKey;
-  @Value("${aws.ses.secret-key}")
+  @Value("${cloud.aws.ses.secret-key}")
   private String secretKey;
-  @Value("${aws.ses.sender-email}")
+  @Value("${cloud.aws.ses.sender-email}")
   private String SENDER_EMAIL;
   private SesClient sesClient;
 

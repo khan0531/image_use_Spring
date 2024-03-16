@@ -5,9 +5,11 @@ import com.example.image_use_spring.image.service.ImageService;
 import com.example.image_use_spring.member.domain.Member;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
@@ -68,15 +70,14 @@ public class ImageController {
     return ResponseEntity.ok("Callback received");
   }
 
-  @GetMapping("/{imageFileName}")
-  public ResponseEntity<Resource> getImage(
+  @GetMapping("/redirect/{imageFileName}")
+  public void redirectToFileUrl(
       @PathVariable String imageFileName,
-      @AuthenticationPrincipal Member member) {
-
-    Resource resource = imageService.loadImageAsResource(imageFileName, member);
-    return ResponseEntity.ok()
-        .contentType(MediaType.IMAGE_JPEG)
-        .body(resource);
+      HttpServletResponse response,
+      @AuthenticationPrincipal Member member
+  ) throws IOException {
+    String fileUrl = imageService.getImageUrl(imageFileName, member);
+    response.sendRedirect(fileUrl);
   }
 
   @GetMapping("/ocr/{id}")
