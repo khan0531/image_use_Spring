@@ -50,8 +50,11 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 @RequiredArgsConstructor
 public class ImageServiceImpl implements ImageService {
 
-  @Value("${app.aws.s3.bucketName}")
+  @Value("${cloud.aws.s3.bucket-name}")
   private String bucketName;
+
+  @Value("${cloud.aws.cloudfront.domain-name}")
+  private String cloudFrontDomainName;
 
   private final S3Client s3Client;
 
@@ -196,8 +199,12 @@ public class ImageServiceImpl implements ImageService {
   }
 
   private String getFileUrl(String fileKey) {
-    return s3Client.utilities().getUrl(builder -> builder.bucket(bucketName).key(fileKey)).toExternalForm();
+    return "https://" + cloudFrontDomainName + "/" + fileKey;
   }
+
+//  private String getFileUrl(String fileKey) {
+//    return s3Client.utilities().getUrl(builder -> builder.bucket(bucketName).key(fileKey)).toExternalForm();
+//  }
 
   private void uploadFileToS3(byte[] fileData, String fileKey, String mimeType) {
     PutObjectRequest putObjectRequest = PutObjectRequest.builder()

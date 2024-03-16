@@ -45,7 +45,10 @@ cloud:
     ses:
       sender-email: ${senderEmail:YOUR_SENDER_EMAIL}
     s3:
-      bucketName: ${S3_BUCKET_NAME:your-bucket-name}
+      bucket-name: ${S3_BUCKET_NAME:your-bucket-name}
+    cloudfront:
+      distributionId: ${CLOUDFRONT_DISTRIBUTION_ID:YOUR_CLOUDFRONT_DISTRIBUTION_ID}
+      domain-name: ${CLOUDFRONT_DOMAIN_NAME:YOUR_CLOUDFRONT_DOMAIN_NAME}
 
 
 azure:
