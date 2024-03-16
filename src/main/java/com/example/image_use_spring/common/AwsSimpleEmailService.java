@@ -21,12 +21,17 @@ import software.amazon.awssdk.services.ses.model.SendEmailRequest;
 @Service
 public class AwsSimpleEmailService {
 
-  @Value("${cloud.aws.ses.access-key}")
+  @Value("${cloud.aws.credentials.access-key}")
   private String accessKey;
-  @Value("${cloud.aws.ses.secret-key}")
+
+  @Value("${cloud.aws.credentials.secret-key}")
   private String secretKey;
+
   @Value("${cloud.aws.ses.sender-email}")
   private String SENDER_EMAIL;
+
+  @Value("${cloud.aws.region.static}")
+  private String region;
   private SesClient sesClient;
 
   @PostConstruct
@@ -34,7 +39,7 @@ public class AwsSimpleEmailService {
     AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accessKey, secretKey);
     sesClient = SesClient.builder()
         .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
-        .region(Region.AP_NORTHEAST_2)
+        .region(Region.of(region))
         .build();
   }
 
