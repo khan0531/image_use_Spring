@@ -19,10 +19,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class ImageUtil {
 
-  public Path storeFile(byte[] fileData, Path path) throws IOException {
-    Files.write(path, fileData);
-    return path;
-  }
+//  public Path storeFile(byte[] fileData, Path path) throws IOException {
+//    Files.write(path, fileData);
+//    return path;
+//  }
 
   public byte[] compressImage(byte[] imageData) throws IOException {
     ByteArrayInputStream bais = new ByteArrayInputStream(imageData);
